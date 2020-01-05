@@ -3,9 +3,18 @@ const Schema = mongoose.Schema
 const timestamp = require('mongoose-timestamp')
 
 const UserSchema = new Schema({
-  facebookCred: Object,
-  lastTimePrayed: String,
-  streak: Number
+  userId: String,
+  email: String,
+  name: String,
+  pictureUrl: String,
+  lastTimePrayed: {
+    type: String,
+    default: Date.now()
+  },
+  streak: {
+    type: Number,
+    default: 0
+  }
 });
 
 UserSchema.plugin(timestamp)

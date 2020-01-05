@@ -5,14 +5,17 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
+const connectToDb = require('./db/connect')
 const PrayerList = require('./routes/PrayerList');
 const Prayer = require('./routes/Prayer');
 const User = require('./routes/User');
 
+// MONGODB CONNECTION
+connectToDb()
+
 const app = express();
 
 app.use(cors());
-
 app.options('*', cors());
 
 // Bodyparser Middleware

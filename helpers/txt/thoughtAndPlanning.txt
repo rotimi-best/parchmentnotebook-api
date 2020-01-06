@@ -1,0 +1,47 @@
+Features
+
+1. Add a prayer request
+  - Start and End Date
+  - Mark as answered
+  - Add to a prayerlist
+
+2. Manage prayerlist
+  - Create a prayerlist
+  - Rename the prayerlist
+  - Delete the prayer list
+  - Add prayers to that prayer list
+  - Remove a prayer from that prayer list
+
+3. Home page
+  - View my prayer streaks
+  - View my prayer points for today
+
+How do I calculate prayer streaks?
+- Get the streaks number from the user object
+
+A) How to increment the streak?
+  PUT /prayer/1
+  Body - prayed: Boolean
+
+  if (prayed === true) {
+    if (user.lastDatePrayed === yesterday && user.lastDatePrayed !== today) {
+      updateUser({ userId }, {
+        lastDatePrayed: new Date(date()).getTime(), // today
+        { $inc: { streak: 1 } }
+      })
+    }
+  }
+
+- When the user marks a prayer as prayed today, then
+  - update user.lastDatePrayed
+
+How do I calculate the prayer points for the day
+const { startDate, endDate } = prayer;
+const today = Date.now();
+
+This means that today is within the startDate to endDate;
+if (startDate <= today && endDate >= today) {
+
+}
+
+Use case flow.

@@ -2,13 +2,20 @@ module.exports = (
     mongooseModel,
     params,
     sort = null,
-    selectedFields = null
+    selectedFields = null,
+    populateField = null
 ) => {
     return new Promise((resolve, reject) => {
-        mongooseModel.find(params, selectedFields, sort, (err, texts) => {
-            if (err) reject(`Error while finding text ${err}`)
+      const findResult = mongooseModel.find(params, selectedFields, sort)
 
-            resolve(texts)
-        })
+      if (populateField && Array.isArray(populateField) && updatedPrayer.length) {
+        populateField.forEach(field => findResult.populate(field))
+      }
+
+      findResult.exec((err, texts) => {
+        if (err) reject(`Error while finding text ${err}`)
+
+        resolve(texts)
+      });
     })
 }

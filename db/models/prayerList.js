@@ -3,23 +3,24 @@ const Schema = mongoose.Schema
 const timestamp = require('mongoose-timestamp')
 
 const PrayerListSchema = new Schema({
+  _id: Schema.Types.ObjectId,
   title: String,
+  public: Boolean,
   creator: {
-    id: Schema.Types.ObjectId,
-    name: String,
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   },
   owner: {
-    id: Schema.Types.ObjectId,
-    name: String,
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   },
   prayers: [
     {
-      id: Schema.Types.ObjectId,
-      description: String,
+      type: Schema.Types.ObjectId,
+      ref: 'Prayer'
     }
   ],
-  public: Boolean,
 });
 
-PrayerListSchema.plugin(timestamp)
-module.exports = mongoose.model('PrayerList', PrayerListSchema)
+PrayerListSchema.plugin(timestamp);
+module.exports = mongoose.model('PrayerList', PrayerListSchema);

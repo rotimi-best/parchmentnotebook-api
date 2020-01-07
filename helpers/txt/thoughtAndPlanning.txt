@@ -44,4 +44,52 @@ if (startDate <= today && endDate >= today) {
 
 }
 
-Use case flow.
+=================================================================
+# Duplicating data in 2 collections and always updating each time
+=================================================================
+const student = {
+  name: '',
+  schools: [schoolId]
+}
+
+const school = {
+  name: '',
+  students: [studentId]
+}
+const existingSchool = {
+  name: 'Excelency',
+  students: [1,2,3,4]
+}
+
+Task: Update student given a new update as below:
+const newStudent = {
+  id: 1
+  name: 'Tod Betley',
+  schools: [1,2,3,4]
+};
+
+- Task a) Update the student model
+- Task b) Update the school model
+
+- Task a)
+  updateStudent({ id: 1 }, newStudent)
+
+- Task b)
+- Get all schools with this usersId
+- Loop through them and if they are not in the newStudent.schools,
+then remove that student from that school else if they are found then don't
+do anything else if they were not changed
+  - for (const school from newStudent.schools) {
+
+  }
+  - student = getStudent({ id })
+  -- If exists
+  - if (student.schools.includes(globalSchoolId)) {
+    updateStudent({ id }, {
+      $pull: {
+        schools: globalSchoolId
+      }
+    })
+  } else {
+
+  }

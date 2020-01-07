@@ -5,7 +5,14 @@ const timestamp = require('mongoose-timestamp')
 const PrayerListSchema = new Schema({
   _id: Schema.Types.ObjectId,
   title: String,
-  public: Boolean,
+  public: {
+    type: Boolean,
+    default: true
+  },
+  edittableByUser: {
+    type: Boolean,
+    default: true
+  },
   creator: {
     type: Schema.Types.ObjectId,
     ref: 'User'

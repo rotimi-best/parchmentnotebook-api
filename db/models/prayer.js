@@ -5,7 +5,10 @@ const timestamp = require('mongoose-timestamp')
 const PrayerSchema = new Schema({
   _id: Schema.Types.ObjectId,
   description: String,
-  answered: Boolean,
+  answered: {
+    type: Boolean,
+    default: false
+  },
   start: {
     type: Number,
     default: Date.now()
@@ -26,7 +29,6 @@ const PrayerSchema = new Schema({
     type: Number,
     default: Date.now()
   },
-  prayerList: [{ type: Schema.Types.ObjectId, ref: 'PrayerList' }]
 });
 
 PrayerSchema.plugin(timestamp);

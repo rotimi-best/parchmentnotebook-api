@@ -5,8 +5,8 @@ const { ObjectId } = mongoose.Types;
 const router = express.Router();
 const { getUser, updateUser } = require('../db/cruds/User');
 const { getPrayer, updatePrayer, addPrayer } = require('../db/cruds/Prayer');
-const { updatePrayerList } = require('../db/cruds/PrayerList');
-const { date, len, reduceDay } = require('../modules');
+const { getPrayerList } = require('../db/cruds/PrayerList');
+const { date, reduceDay } = require('../modules');
 
 const today = new Date(date()).getTime(); // new Date("2020-06-01").getTime()
 
@@ -25,9 +25,12 @@ router.get('/', async (req, res) => {
     });
   }
 
-  const prayers = await getPrayer({
-    owner: user._id,
-  }, null, null, ['prayerList']);
+  let prayers = await getPrayer({owner: user._id});
+  prayers = prayers.map(prayer => {
+    prayer.prayerList = await getPrayerList({ prayers: prayer._id })
+
+    return prayer;
+  });
 
   res.json({ success: true, prayers });
 });
@@ -42,7 +45,6 @@ router.post('/', async (req, res) => {
     start = today,
     end = today,
     userId,
-    prayerList
   } = req.body;
 
   const _userId = ObjectId(userId);
@@ -63,16 +65,7 @@ router.post('/', async (req, res) => {
     lastDatePrayed: today,
     creator: _userId,
     owner: _userId,
-    prayerList
   });
-
-  if (prayerList && Array.isArray(prayerList) && len(prayerList)) {
-    prayerList.forEach(async list => {
-      await updatePrayerList({ _id: ObjectId(list._id) }, {
-        $push: { prayers: prayer._id }
-      })
-    })
-  }
 
   res.json({
     success: true,
@@ -100,11 +93,6 @@ router.put('/:prayerId', async (req, res) => {
   // TODO: Add to JS interview questions. The diff between 1 and 2
   const { owner: user, _id: prayerId } = prayer; //1. const { id: userId } = user
 
-  let prayerList = fieldsToUpdate.prayerList;
-  if (len(prayerList)) {
-    prayerList = prayerList.map(list => ObjectId(list._id));
-  }
-
   await updatePrayer({ _id: prayerId }, fieldsToUpdate); //2. updateUser({ id: userId })
 
   // Note: if lastDatePrayed === todaysDate ? "User prayed today" : "Didn't pray today";
@@ -125,12 +113,12 @@ router.put('/:prayerId', async (req, res) => {
     }
   }
 
-  const [updatedPrayer] = await getPrayer({
-    _id: prayerId},
+  const [updatedPrayer] = await getPrayer({  _id: prayerId },
     null,
     null,
-    ['creator', 'owner', 'prayerList']
-  );
+    ['creator', 'owner']);
+
+  updatedPrayer.prayerList = await getPrayerList({ prayers: prayerId });
 
   res.json({
     success: true,

@@ -5,13 +5,13 @@ const { ObjectId } = mongoose.Types;
 const router = express.Router();
 const { getUser, updateUser } = require('../db/cruds/User');
 const { getPrayer, updatePrayer, addPrayer } = require('../db/cruds/Prayer');
-const { updatePrayerList, getPrayerList, addPrayerList } = require('../db/cruds/PrayerList');
+const { updateCollection, getCollection, addCollection } = require('../db/cruds/Collection');
 const { date, len, reduceDay } = require('../modules');
 
 const today = new Date(date()).getTime(); // new Date("2020-06-01").getTime()
 
-// @route GET /prayerlist
-// @route Get All Prayer Lists
+// @route GET /collection
+// @route Get All Collections
 // @access Private
 router.get('/', async (req, res) => {
   const { userId = '' } = req.body;
@@ -25,11 +25,11 @@ router.get('/', async (req, res) => {
     });
   }
 
-  const prayerList = await getPrayerList({
+  const collection = await getCollection({
     owner: user._id,
   }, null, null, ['prayer', 'creator']);
 
-  // Manually generate prayerList for answered and unanswered prayers
+  // Manually generate collection for answered and unanswered prayers
   const allPrayers = await getPrayer({owner: user._id });
   const answered = {
     title: 'Answered Prayers',
@@ -49,13 +49,13 @@ router.get('/', async (req, res) => {
     else unanswered.prayers.push(prayer)
   })
 
-  prayerList.push(answered, unanswered);
+  collection.push(answered, unanswered);
 
-  res.json({ success: true, prayerList });
+  res.json({ success: true, collection });
 });
 
-// @route POST /prayerlist
-// @route Add a Prayer List
+// @route POST /collection
+// @route Add a Collection
 // @access Private
 router.post('/', async (req, res) => {
   let {
@@ -85,7 +85,7 @@ router.post('/', async (req, res) => {
     prayers = prayers.map(prayer => ObjectId(prayer._id));
   }
 
-  const prayerList = await addPrayerList({
+  const collection = await addCollection({
     title,
     creator: _userId,
     owner: _userId,
@@ -94,28 +94,28 @@ router.post('/', async (req, res) => {
 
   res.json({
     success: true,
-    prayerList
+    collection
   });
 });
 
-// @route PUT prayer/prayerListId
-// @route Update a Prayer List
+// @route PUT prayer/collectionId
+// @route Update a Collection
 // @access Private
-router.put('/:prayerListId', async (req, res) => {
-  const { prayerListId } = req.params;
+router.put('/:collectionId', async (req, res) => {
+  const { collectionId } = req.params;
   const fieldsToUpdate = req.body;
 
-  if (!ObjectId.isValid(prayerListId)) {
+  if (!ObjectId.isValid(collectionId)) {
     return res.status(404).json({
       success: false,
-      message: 'Invalid prayer list id'
+      message: 'Invalid collection id'
     });
   }
 
-  const _prayerListId = ObjectId(prayerListId)
-  const [prayerList] = await getPrayerList({ _id: _prayerListId });
+  const _collectionId = ObjectId(collectionId)
+  const [collection] = await getCollection({ _id: _collectionId });
 
-  if (!prayerList) {
+  if (!collection) {
     return res.status(404).json({
       success: false,
       message: 'Prayer List not found'
@@ -127,9 +127,9 @@ router.put('/:prayerListId', async (req, res) => {
     prayers = prayers.map(list => ObjectId(list._id));
   }
 
-  await updatePrayerList({ _id: _prayerListId }, fieldsToUpdate);
+  await updateCollection({ _id: _collectionId }, fieldsToUpdate);
 
-  const [updatedPrayerList] = await getPrayerList({ _id: _prayerListId },
+  const [updatedCollection] = await getCollection({ _id: _collectionId },
     null,
     null,
     ['creator', 'owner', 'prayer']
@@ -137,7 +137,7 @@ router.put('/:prayerListId', async (req, res) => {
 
   res.json({
     success: true,
-    prayer: updatedPrayerList
+    prayer: updatedCollection
   });
 });
 

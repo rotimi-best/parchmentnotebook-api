@@ -5,7 +5,7 @@ const { ObjectId } = mongoose.Types;
 const router = express.Router();
 const { getUser, updateUser } = require('../db/cruds/User');
 const { getPrayer, updatePrayer, addPrayer } = require('../db/cruds/Prayer');
-const { getPrayerList } = require('../db/cruds/PrayerList');
+const { getCollection } = require('../db/cruds/Collection');
 const { date, reduceDay } = require('../modules');
 
 const today = new Date(date()).getTime(); // new Date("2020-06-01").getTime()
@@ -26,8 +26,8 @@ router.get('/', async (req, res) => {
   }
 
   let prayers = await getPrayer({owner: user._id});
-  prayers = prayers.map(prayer => {
-    prayer.prayerList = await getPrayerList({ prayers: prayer._id })
+  prayers = prayers.map(async prayer => {
+    prayer.collection = await getCollection({ prayers: prayer._id })
 
     return prayer;
   });
@@ -78,10 +78,19 @@ router.post('/', async (req, res) => {
 // @access Private
 router.put('/:prayerId', async (req, res) => {
   const { prayerId } = req.params;
+
+  if (!ObjectId.isValid(prayerId)) {
+    return res.status(404).json({
+      success: false,
+      message: 'Invalid prayer id'
+    });
+  }
+
+  const _prayerId = ObjectId(prayerId);
   const fieldsToUpdate = req.body;
   const { lastDatePrayed = null } = fieldsToUpdate;
 
-  const [prayer] = await getPrayer({ _id: ObjectId(prayerId) }, null, null, ['owner']);
+  const [prayer] = await getPrayer({ _id: _prayerId }, null, null, ['owner']);
 
   if (!prayer) {
     return res.status(404).json({
@@ -91,9 +100,9 @@ router.put('/:prayerId', async (req, res) => {
   }
 
   // TODO: Add to JS interview questions. The diff between 1 and 2
-  const { owner: user, _id: prayerId } = prayer; //1. const { id: userId } = user
+  const { owner: user } = prayer; //1. const { id: userId } = user
 
-  await updatePrayer({ _id: prayerId }, fieldsToUpdate); //2. updateUser({ id: userId })
+  await updatePrayer({ _id: _prayerId }, fieldsToUpdate); //2. updateUser({ id: userId })
 
   // Note: if lastDatePrayed === todaysDate ? "User prayed today" : "Didn't pray today";
   if (lastDatePrayed && lastDatePrayed === today) {
@@ -113,12 +122,12 @@ router.put('/:prayerId', async (req, res) => {
     }
   }
 
-  const [updatedPrayer] = await getPrayer({  _id: prayerId },
+  const [updatedPrayer] = await getPrayer({  _id: _prayerId },
     null,
     null,
     ['creator', 'owner']);
 
-  updatedPrayer.prayerList = await getPrayerList({ prayers: prayerId });
+  updatedPrayer.collection = await getCollection({ prayers: _prayerId });
 
   res.json({
     success: true,

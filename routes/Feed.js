@@ -5,6 +5,7 @@ const { ObjectId } = mongoose.Types;
 const router = express.Router();
 const { getUser, updateUser } = require('../db/cruds/User');
 const { getPrayer } = require('../db/cruds/Prayer');
+const { getCollection } = require('../db/cruds/Collection');
 const { date, len, reduceDay } = require('../modules');
 
 // @route GET feed
@@ -34,7 +35,7 @@ router.get('/', async (req, res) => {
   }
 
   const todaysDate = new Date(date())
-  const prayersForToday = await getPrayer({
+  const prayersToday = await getPrayer({
     owner: userId,
     $and: [
       {
@@ -48,7 +49,13 @@ router.get('/', async (req, res) => {
         }
       }
     ]
-  }, null, null, ['prayerList']);
+  });
+
+  const prayersTodayWithCollection = prayersToday.map(async prayer => {
+    prayer.collection = await getCollection({ prayers: prayer._id })
+
+    return prayer;
+  });
 
   const prayersPrayedToday = await getPrayer({
     owner: userId,
@@ -57,8 +64,9 @@ router.get('/', async (req, res) => {
 
   return res.json({
     success: true,
+    user,
     streak: user.streak,
-    prayersForToday,
+    prayersToday: prayersTodayWithCollection,
     prayersPrayedToday: len(prayersPrayedToday)
   });
 });

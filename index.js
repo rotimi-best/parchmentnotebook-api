@@ -6,7 +6,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const connectToDb = require('./db/connect')
-const PrayerList = require('./routes/PrayerList');
+const Collection = require('./routes/Collection');
 const Prayer = require('./routes/Prayer');
 const User = require('./routes/User');
 
@@ -31,7 +31,7 @@ app.use('/user', User);
 
 app.use('/prayer', Prayer);
 
-app.use('/prayerlist', PrayerList);
+app.use('/collection', Collection);
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);

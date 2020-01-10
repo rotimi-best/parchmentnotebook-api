@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const timestamp = require('mongoose-timestamp')
 
-const PrayerListSchema = new Schema({
+const CollectionSchema = new Schema({
   _id: Schema.Types.ObjectId,
   title: String,
   public: {
@@ -29,5 +29,5 @@ const PrayerListSchema = new Schema({
   ],
 });
 
-PrayerListSchema.plugin(timestamp);
-module.exports = mongoose.model('PrayerList', PrayerListSchema);
+CollectionSchema.plugin(timestamp);
+module.exports = mongoose.model('Collection', CollectionSchema);

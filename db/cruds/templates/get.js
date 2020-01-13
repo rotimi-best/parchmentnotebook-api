@@ -8,7 +8,7 @@ module.exports = (
     return new Promise((resolve, reject) => {
       const findResult = mongooseModel.find(params, selectedFields, sort)
 
-      if (populateField && Array.isArray(populateField) && updatedPrayer.length) {
+      if (populateField && Array.isArray(populateField) && populateField.length) {
         populateField.forEach(field => findResult.populate(field))
       }
 

@@ -8,13 +8,13 @@ const { getPrayer } = require('../db/cruds/Prayer');
 const { getCollection } = require('../db/cruds/Collection');
 const { date, len, reduceDay } = require('../modules');
 
-// @route GET feed
+// @route GET feed/userId
 // @route Get home feed data
 // @access Private
-router.get('/', async (req, res) => {
-  const { userId = '' } = req.body;
+router.get('/:userId', async (req, res) => {
+  const { userId = '' } = req.params;
 
-  const [user] = await getUser({ _id: ObjectId(userId) });
+  const [user] = await getUser({ userId });
 
   if (!user) {
     return res.status(404).json({
@@ -23,20 +23,20 @@ router.get('/', async (req, res) => {
     });
   }
 
-  const { _id: userId, lastDatePrayed } = user;
+  const { _id, lastDatePrayed } = user;
   const yesterday = new Date(reduceDay(1)).getTime(); // new Date("2020-05-01").getTime()
   const today = new Date(date()).getTime(); // new Date("2020-06-01").getTime()
 
   if (lastDatePrayed !== yesterday && lastDatePrayed !== today) {
     user.streak = 0
-    await updateUser({ _id: userId },  {
+    await updateUser({ _id },  {
       streak: user.streak
     });
   }
 
   const todaysDate = new Date(date())
   const prayersToday = await getPrayer({
-    owner: userId,
+    owner: _id,
     $and: [
       {
         start: {
@@ -51,14 +51,16 @@ router.get('/', async (req, res) => {
     ]
   });
 
-  const prayersTodayWithCollection = prayersToday.map(async prayer => {
-    prayer.collection = await getCollection({ prayers: prayer._id })
+  const prayersTodayWithCollection =  [];
 
-    return prayer;
-  });
+  for (const prayer of prayersToday) {
+    prayer._doc.collection = await getCollection({ prayers: prayer._id });
+
+    prayersTodayWithCollection.push(prayer)
+  }
 
   const prayersPrayedToday = await getPrayer({
-    owner: userId,
+    owner: _id,
     lastDatePrayed: todaysDate.getTime()
   });
 

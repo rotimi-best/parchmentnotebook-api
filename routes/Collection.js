@@ -10,13 +10,13 @@ const { date, len, reduceDay } = require('../modules');
 
 const today = new Date(date()).getTime(); // new Date("2020-06-01").getTime()
 
-// @route GET /collection
+// @route GET /collection/:userId
 // @route Get All Collections
 // @access Private
-router.get('/', async (req, res) => {
-  const { userId = '' } = req.body;
+router.get('/:userId', async (req, res) => {
+  const { userId = '' } = req.params;
 
-  const [user] = await getUser({ _id: ObjectId(userId) });
+  const [user] = await getUser({ userId });
 
   if (!user) {
     return res.status(404).json({
@@ -43,9 +43,10 @@ router.get('/', async (req, res) => {
     public: false,
     prayers: []
   };
-
+  console.log("allPrayers", allPrayers)
   allPrayers.forEach(prayer => {
-    if (prayer.answered) answered.prayers.push(prayer)
+  console.log("prayer", prayer)
+  if (prayer.answered) answered.prayers.push(prayer)
     else unanswered.prayers.push(prayer)
   })
 

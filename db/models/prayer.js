@@ -3,8 +3,8 @@ const Schema = mongoose.Schema
 const timestamp = require('mongoose-timestamp')
 
 const PrayerSchema = new Schema({
-  _id: Schema.Types.ObjectId,
   description: String,
+  note: String,
   answered: {
     type: Boolean,
     default: false
@@ -29,6 +29,11 @@ const PrayerSchema = new Schema({
     type: Number,
     default: Date.now()
   },
+  repeat: {
+    type: String,
+    enum: ['daily', 'weekly', 'monthly', 'yearly', 'none'],
+    default: 'daily'
+  }
 });
 
 PrayerSchema.plugin(timestamp);

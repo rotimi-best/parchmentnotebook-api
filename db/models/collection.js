@@ -3,7 +3,6 @@ const Schema = mongoose.Schema
 const timestamp = require('mongoose-timestamp')
 
 const CollectionSchema = new Schema({
-  _id: Schema.Types.ObjectId,
   title: String,
   public: {
     type: Boolean,

@@ -9,7 +9,7 @@ const router = express.Router();
 // @route POST user/auth
 // @route Authenticate user
 // @access Private
-router.post('/user/auth', async (req, res) => {
+router.post('/auth', async (req, res) => {
   const {
     email,
     name,

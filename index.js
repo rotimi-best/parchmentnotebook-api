@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 const connectToDb = require('./db/connect')
 const Collection = require('./routes/Collection');
 const Prayer = require('./routes/Prayer');
+const Feed = require('./routes/Feed');
 const User = require('./routes/User');
 
 // MONGODB CONNECTION
@@ -30,6 +31,8 @@ app.get('/', (req, res) => {
 app.use('/user', User);
 
 app.use('/prayer', Prayer);
+
+app.use('/feed', Feed);
 
 app.use('/collection', Collection);
 

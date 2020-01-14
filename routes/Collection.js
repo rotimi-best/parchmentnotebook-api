@@ -11,7 +11,7 @@ const { date, len, reduceDay } = require('../modules');
 const today = new Date(date()).getTime(); // new Date("2020-06-01").getTime()
 
 // @route GET /collection/:userId
-// @route Get All Collections
+// @route Get All Collections of a particular user
 // @access Private
 router.get('/:userId', async (req, res) => {
   const { userId = '' } = req.params;
@@ -25,7 +25,7 @@ router.get('/:userId', async (req, res) => {
     });
   }
 
-  const collection = await getCollection({
+  const collections = await getCollection({
     owner: user._id,
   }, null, null, ['prayer', 'creator']);
 
@@ -45,14 +45,13 @@ router.get('/:userId', async (req, res) => {
   };
   console.log("allPrayers", allPrayers)
   allPrayers.forEach(prayer => {
-  console.log("prayer", prayer)
   if (prayer.answered) answered.prayers.push(prayer)
     else unanswered.prayers.push(prayer)
   })
 
-  collection.push(answered, unanswered);
+  collections.push(answered, unanswered);
 
-  res.json({ success: true, collection });
+  res.json({ success: true, collections });
 });
 
 // @route POST /collection

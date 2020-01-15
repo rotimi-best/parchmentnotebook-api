@@ -5,6 +5,10 @@ module.exports = {
       STAGING: 'staging',
       LOCAL: 'local',
     },
+    DEFAULT_COLLECTION: {
+      ANSWERED_PRAYERS: 'Answered Prayers',
+      UNANSWERED_PRAYERS: 'Unanswered Prayers',
+    },
     DAYS: {
       LONG: [
         'Sunday',

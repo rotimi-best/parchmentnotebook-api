@@ -40,7 +40,7 @@ router.get('/:userId', async (req, res) => {
   };
   const unanswered = {
     _id: 2,
-    title: 'Unanswered Prayers Unanswered Prayers Unanswered Prayers Unanswered Prayers Unanswered Prayers',
+    title: 'Unanswered Prayers',
     edittableByUser: false,
     public: false,
     prayers: []

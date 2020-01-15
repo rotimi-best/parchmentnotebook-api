@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types;
 
 const { addUser, getUser, updateUser } = require('../db/cruds/User');
+const { addCollection } = require('../db/cruds/Collection');
+const { DEFAULT_COLLECTION } = require('../helpers/constants');
 
 const router = express.Router();
 
@@ -35,6 +37,27 @@ router.post('/auth', async (req, res) => {
       pictureUrl,
       userId,
     });
+
+    // Default collection for each user
+    const answered = {
+      title: DEFAULT_COLLECTION.ANSWERED_PRAYERS,
+      edittableByUser: false,
+      public: false,
+      prayers: [],
+      creator: user._id,
+      owner: user._id,
+    };
+
+    const unanswered = {
+      title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS,
+      edittableByUser: false,
+      public: false,
+      prayers: [],
+      creator: user._id,
+      owner: user._id,
+    };
+
+    await addCollection([answered, unanswered])
   }
 
   res.json({ success: true, user });

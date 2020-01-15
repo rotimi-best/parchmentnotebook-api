@@ -31,7 +31,7 @@ const PrayerSchema = new Schema({
   },
   repeat: {
     type: String,
-    enum: ['daily', 'weekly', 'monthly', 'yearly', 'none'],
+    enum: ['daily', 'weekly', 'monthly', 'yearly', 'never'],
     default: 'daily'
   }
 });

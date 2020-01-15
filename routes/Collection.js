@@ -27,23 +27,25 @@ router.get('/:userId', async (req, res) => {
 
   const collections = await getCollection({
     owner: user._id,
-  }, null, null, ['prayer', 'creator']);
+  }, {sort: { title: 1 }}, null, ['prayer', 'creator']);
 
   // Manually generate collection for answered and unanswered prayers
   const allPrayers = await getPrayer({owner: user._id });
   const answered = {
+    _id: 1,
     title: 'Answered Prayers',
     edittableByUser: false,
     public: false,
     prayers: []
   };
   const unanswered = {
-    title: 'Unanswered Prayers',
+    _id: 2,
+    title: 'Unanswered Prayers Unanswered Prayers Unanswered Prayers Unanswered Prayers Unanswered Prayers',
     edittableByUser: false,
     public: false,
     prayers: []
   };
-  console.log("allPrayers", allPrayers)
+
   allPrayers.forEach(prayer => {
   if (prayer.answered) answered.prayers.push(prayer)
     else unanswered.prayers.push(prayer)
@@ -71,8 +73,7 @@ router.post('/', async (req, res) => {
     });
   }
 
-  const _userId = ObjectId(userId);
-  let [user] = await getUser({ _id: _userId });
+  let [user] = await getUser({ userId });
 
   if (!user) {
     return res.status(404).json({
@@ -87,8 +88,8 @@ router.post('/', async (req, res) => {
 
   const collection = await addCollection({
     title,
-    creator: _userId,
-    owner: _userId,
+    creator: user._id,
+    owner: user._id,
     prayers
   });
 

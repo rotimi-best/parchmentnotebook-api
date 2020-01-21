@@ -28,7 +28,7 @@ router.get('/:userId', async (req, res) => {
 
   const prayers = await getPrayer({
     owner: user._id
-  }, null, null, ['owner', 'creator']);
+  }, { sort: { createdAt: -1 }}, null, ['owner', 'creator']);
   const prayersWithCollection = [];
 
   for (const prayer of prayers) {
@@ -76,14 +76,10 @@ router.post('/', async (req, res) => {
     owner: user._id,
   });
 
-  prayer._doc.collections = collections;
-  console.log("collections", collections);
   collections.forEach(async title => {
-    console.log("title", title);
-    const res = await updateCollection({ title, owner: user._id }, {
+    await updateCollection({ title, owner: user._id }, {
       $push: { prayers: prayer._id }
     });
-    console.log("res update", res);
   });
 
   const defaultCollectionTitle = answered
@@ -93,6 +89,8 @@ router.post('/', async (req, res) => {
   await updateCollection({ title: defaultCollectionTitle, owner: user._id }, {
     $push: { prayers: prayer._id }
   });
+
+  prayer._doc.collections = await getCollection({ prayers: prayer._id });;
 
   res.json({
     success: true,
@@ -149,41 +147,51 @@ router.put('/:prayerId', async (req, res) => {
     }
   }
 
+  const findPrayersByPrayerId = { prayers: _prayerId };
+
   // Update Collection
   //1. Default
   if (typeof answered === "boolean") {
-    const answeredUpdates = answered ? { $push: { prayers: _prayerId } } : { $pull: { prayers: _prayerId } }
-    const unansweredUpdates = !answered ? { $push: { prayers: _prayerId } } : { $pull: { prayers: _prayerId } }
-    await updateCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: user._id }, answeredUpdates);
-    await updateCollection({ title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS, owner: user._id }, unansweredUpdates);
+    const params = bol => bol ? { $push: findPrayersByPrayerId } : { $pull: findPrayersByPrayerId }
+
+    await updateCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: user._id }, params(answered));
+    await updateCollection({ title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS, owner: user._id }, params(!answered));
   }
 
   //2. Every other
-  const userCurrentCollections = await getCollection({ owner: user._id, edittableByUser: true });
-  // Remove those that were remove
+  const userCurrentCollections = await getCollection({
+    owner: user._id,
+    edittableByUser: true,
+    ...findPrayersByPrayerId
+  });
+
+  // Remove from DB what was removed on the client.
   for (const userCurrentCollection of userCurrentCollections) {
     const { _id, title } = userCurrentCollection;
-    if (!collections.include(title)) {
+
+    if (!collections.includes(title)) {
       await updateCollection({ _id }, {
-        $pull: { prayers: _prayerId }
+        $pull: findPrayersByPrayerId
       });
     } else {
       collections.splice(collections.indexOf(title), 1);
     }
   }
+
+
   // Add the new ones
-  collections.forEach(async title => {
-    await updateCollection({ title }, {
-      $push: { prayers: _prayerId }
+  for (const colTitle of collections) {
+    await updateCollection({ title: colTitle, owner: user._id }, {
+      $push: findPrayersByPrayerId
     });
-  })
+  }
 
   const [updatedPrayer] = await getPrayer({  _id: _prayerId },
     null,
     null,
     ['creator', 'owner']);
 
-  updatedPrayer._doc.collections = await getCollection({ prayers: _prayerId });
+  updatedPrayer._doc.collections = await getCollection(findPrayersByPrayerId);
 
   res.json({
     success: true,

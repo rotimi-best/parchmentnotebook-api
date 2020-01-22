@@ -28,7 +28,7 @@ router.get('/:userId', async (req, res) => {
 
   const prayers = await getPrayer({
     owner: user._id
-  }, { sort: { createdAt: -1 }}, null, ['owner', 'creator']);
+  }, { sort: { createdAt: -1 } }, null, ['owner', 'creator']);
   const prayersWithCollection = [];
 
   for (const prayer of prayers) {

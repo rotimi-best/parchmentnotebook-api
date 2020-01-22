@@ -13,8 +13,8 @@ const today = new Date(date()).getTime(); // new Date("2020-06-01").getTime()
 // @route GET /collection/:userId
 // @route Get All Collections of a particular user
 // @access Private
-router.get('/:userId', async (req, res) => {
-  const { userId = '' } = req.params;
+router.get('/', async (req, res) => {
+  const { userId } = req.query;
 
   const [user] = await getUser({ userId });
 
@@ -27,33 +27,50 @@ router.get('/:userId', async (req, res) => {
 
   const collections = await getCollection({
     owner: user._id,
-  }, {sort: { title: 1 }}, null, ['prayer', 'creator']);
+  }, { sort: { title: 1 } }, null, ['prayers', 'creator']);
 
-  // Manually generate collection for answered and unanswered prayers
-  const allPrayers = await getPrayer({owner: user._id });
-  const answered = {
-    _id: 1,
-    title: 'Answered Prayers',
-    edittableByUser: false,
-    public: false,
-    prayers: []
-  };
-  const unanswered = {
-    _id: 2,
-    title: 'Unanswered Prayers',
-    edittableByUser: false,
-    public: false,
-    prayers: []
-  };
-
-  allPrayers.forEach(prayer => {
-  if (prayer.answered) answered.prayers.push(prayer)
-    else unanswered.prayers.push(prayer)
-  })
-
-  collections.push(answered, unanswered);
+  for (const collection of collections) {
+    for (const prayer of collection.prayers) {
+      prayer._doc.collections = await getCollection({ prayers: prayer._id });
+    }
+  }
 
   res.json({ success: true, collections });
+});
+
+// @route GET /collection/:collectionId
+// @route Get A Collection of a particular user
+// @access Private
+router.get('/:collectionId', async (req, res) => {
+  const { collectionId = '' } = req.params;
+  const { userId } = req.query;
+
+  if (!ObjectId.isValid(collectionId)) {
+    return res.status(404).json({
+      success: false,
+      message: 'Invalid collection id'
+    });
+  }
+
+  const [user] = await getUser({ userId });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  const [collection] = await getCollection({
+    _id: ObjectId(collectionId),
+    owner: user._id,
+  }, { sort: { createdAt: -1 } }, null, ['prayers', 'creator']);
+
+  for (const prayer of collection.prayers) {
+    prayer._doc.collections = await getCollection({ prayers: prayer._id });
+  }
+
+  res.json({ success: true, collection });
 });
 
 // @route POST /collection
@@ -93,13 +110,17 @@ router.post('/', async (req, res) => {
     prayers
   });
 
+  for (const prayer of collection.prayers) {
+    prayer._doc.collections = await getCollection({ prayers: prayer._id });
+  }
+
   res.json({
     success: true,
     collection
   });
 });
 
-// @route PUT prayer/collectionId
+// @route PUT collection/collectionId
 // @route Update a Collection
 // @access Private
 router.put('/:collectionId', async (req, res) => {
@@ -133,12 +154,16 @@ router.put('/:collectionId', async (req, res) => {
   const [updatedCollection] = await getCollection({ _id: _collectionId },
     null,
     null,
-    ['creator', 'owner', 'prayer']
+    ['creator', 'owner', 'prayers']
   );
+
+  for (const prayer of updatedCollection.prayers) {
+    prayer._doc.collections = await getCollection({ prayers: prayer._id });
+  }
 
   res.json({
     success: true,
-    prayer: updatedCollection
+    collection: updatedCollection
   });
 });
 

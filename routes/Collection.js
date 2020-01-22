@@ -140,11 +140,11 @@ router.put('/:collectionId', async (req, res) => {
   if (!collection) {
     return res.status(404).json({
       success: false,
-      message: 'Prayer List not found'
+      message: 'Collection not found'
     });
   }
 
-  let prayers = fieldsToUpdate.prayers;
+  let prayers = fieldsToUpdate.prayers || '';
   if (len(prayers)) {
     prayers = prayers.map(list => ObjectId(list._id));
   }

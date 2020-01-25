@@ -3,12 +3,9 @@ const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types;
 
 const router = express.Router();
-const { getUser, updateUser } = require('../db/cruds/User');
-const { getPrayer, updatePrayer, addPrayer } = require('../db/cruds/Prayer');
+const { getUser } = require('../db/cruds/User');
 const { updateCollection, getCollection, addCollection } = require('../db/cruds/Collection');
-const { date, len, reduceDay } = require('../modules');
-
-const today = new Date(date()).getTime(); // new Date("2020-06-01").getTime()
+const { len } = require('../modules');
 
 // @route GET /collection/:userId
 // @route Get All Collections of a particular user

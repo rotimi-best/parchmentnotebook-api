@@ -22,29 +22,19 @@ const genRandNum = (min, max) =>
  * `monthInText`: if true then the name of the month will be returned instead of its index
  * e.g 2018-Nov-02 not 2018-12-02
  */
-const date = params => {
-  const today = new Date();
-  const daysInTextArr = CONSTANTS.DAYS.LONG;
-  const { monthInText, dayInText } = params || false;
-  const day = today.getDate();
-  const dayText = today.getDay();
-  const month = monthInText ? today.getMonth() : today.getMonth() + 1;
+const date = ({ toUTC, defDate = null }) => {
+  const today = defDate ? defDate : new Date();
+  const dateNumber = today.getDate();
+  const month = toUTC ? today.getMonth() : today.getMonth() + 1;
   const year = today.getFullYear();
-  const monthArr = CONSTANTS.MONTHS.SHORT;
 
-  let returnVal;
-
-  if (dayInText) return daysInTextArr[dayText];
-
-  if (monthInText) {
-    returnVal = `${year}-${monthArr[month]}-${day < 10 ? "0" + day : day}`;
-  } else {
-    returnVal = `${year}-${month < 10 ? "0" + month : month}-${
-      day < 10 ? "0" + day : day
-    }`;
+  if (toUTC) {
+    return Date.UTC(year, month, dateNumber);
   }
 
-  return returnVal;
+  return `${year}-${month < 10 ? "0" + month : month}-${
+    dateNumber < 10 ? "0" + dateNumber : dateNumber
+  }`;;
 };
 
 /**
@@ -96,7 +86,7 @@ const increaseDay = (value, date) => {
   const today = new Date();
   // if the date is undefined then I use the date of that day
   // if the date is defined e.g 2018-01-10, I want only the day which is 10 so I use regex to get it.
-  date === undefined
+  !date
     ? today.setDate(today.getDate() + value)
     : today.setDate(parseInt(date.replace(/\d+(-)\d+(-)(0)/g, "")) + value);
 
@@ -108,11 +98,6 @@ const increaseDay = (value, date) => {
     increasedMonth < 10 ? "0" + increasedMonth : increasedMonth
   }-${increasedDay < 10 ? "0" + increasedDay : increasedDay}`;
 
-  //Reseting the date back to todays date
-  date === undefined
-    ? today.setDate(today.getDate() - value)
-    : today.setDate(parseInt(date.replace(/\d+(-)\d+(-)(0)/g, "")) - value);
-
   return future;
 };
 
@@ -122,23 +107,25 @@ const increaseDay = (value, date) => {
  * @param {Number} value The number by which you want to reduce the date
  * @param {Date} date (optional) The date you want to begin reducing from.
  */
-const reduceDay = (value, date) => {
+const reduceDay = (value, date, toUTC) => {
   const today = new Date();
   //if the date is undefined then I use todays date
   //else if the date is defined e.g 2018-01-10, I want only the day which is 10 so I use regex to get it.
-  date === undefined
+  !date
     ? today.setDate(today.getDate() - value)
     : today.setDate(parseInt(date.replace(/\d+(-)\d+(-)(0)/g, "")) - value);
   const reducedDay = today.getDate();
-  const reducedMonth = today.getMonth() + 1;
+  const reducedMonth = toUTC ? today.getMonth() : today.getMonth() + 1;
   const reducedYear = today.getFullYear();
+
+  if (toUTC) {
+    return Date.UTC(reducedYear, reducedMonth, reducedDay);
+  }
+
   const past = `${reducedYear}-${
     reducedMonth < 10 ? "0" + reducedMonth : reducedMonth
   }-${reducedDay < 10 ? "0" + reducedDay : reducedDay}`;
 
-  date === undefined
-    ? today.setDate(today.getDate() + value)
-    : today.setDate(parseInt(date.replace(/\d+(-)\d+(-)(0)/g, "")) + value);
   return past;
 };
 

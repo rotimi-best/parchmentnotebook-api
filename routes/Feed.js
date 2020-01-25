@@ -22,8 +22,8 @@ router.get('/:userId', async (req, res) => {
   }
 
   const { _id, lastDatePrayed } = user;
-  const yesterday = new Date(`${reduceDay(1)} 00:00:00`).getTime(); // new Date("2020-05-01").getTime()
-  const today = new Date(`${date()} 00:00:00`).getTime(); // new Date("2020-06-01").getTime()
+  const yesterday = reduceDay(1, null, true);
+  const today = date({ toUTC: true });
 
   if (lastDatePrayed !== yesterday && lastDatePrayed !== today) {
     user.streak = 0

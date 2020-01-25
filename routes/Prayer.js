@@ -9,8 +9,6 @@ const { getCollection, updateCollection } = require('../db/cruds/Collection');
 const { date, reduceDay } = require('../modules');
 const { DEFAULT_COLLECTION } = require('../helpers/constants');
 
-const today = new Date(`${date()} 00:00:00`).getTime(); // new Date("2020-06-01").getTime()
-
 // @route GET /prayer/userId
 // @route Get All Prayer Request
 // @access Private
@@ -44,6 +42,7 @@ router.get('/:userId', async (req, res) => {
 // @route Add a prayer
 // @access Private
 router.post('/', async (req, res) => {
+  const today = date({ toUTC: true });
   const {
     description = '',
     repeat,
@@ -102,6 +101,7 @@ router.post('/', async (req, res) => {
 // @route Update a prayer
 // @access Private
 router.put('/:prayerId', async (req, res) => {
+  const today = date({ toUTC: true });
   const { prayerId } = req.params;
 
   if (!ObjectId.isValid(prayerId)) {

@@ -9,7 +9,7 @@ const { getCollection, updateCollection } = require('../db/cruds/Collection');
 const { date, reduceDay } = require('../modules');
 const { DEFAULT_COLLECTION } = require('../helpers/constants');
 
-const today = new Date(date()).getTime(); // new Date("2020-06-01").getTime()
+const today = new Date(`${date()} 00:00:00`).getTime(); // new Date("2020-06-01").getTime()
 
 // @route GET /prayer/userId
 // @route Get All Prayer Request
@@ -131,7 +131,7 @@ router.put('/:prayerId', async (req, res) => {
 
   // Note: if lastDatePrayed === todaysDate ? "User prayed today" : "Didn't pray today";
   if (lastDatePrayed && lastDatePrayed === today) {
-    const yesterday = new Date(reduceDay(1)).getTime(); // new Date("2020-05-01").getTime()
+    const yesterday = new Date(`${reduceDay(1)} 00:00:00`).getTime(); // new Date("2020-05-01").getTime()
 
     if (user.lastDatePrayed === yesterday && user.lastDatePrayed !== today) {
       await updateUser({ _id: user._id },  {
@@ -150,40 +150,44 @@ router.put('/:prayerId', async (req, res) => {
   const findPrayersByPrayerId = { prayers: _prayerId };
 
   // Update Collection
-  //1. Default
+  // 1. Default
   if (typeof answered === "boolean") {
     const params = bol => bol ? { $push: findPrayersByPrayerId } : { $pull: findPrayersByPrayerId }
+    const [wasAnswered] = await getCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: user._id, ...findPrayersByPrayerId });
 
-    await updateCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: user._id }, params(answered));
-    await updateCollection({ title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS, owner: user._id }, params(!answered));
-  }
-
-  //2. Every other
-  const userCurrentCollections = await getCollection({
-    owner: user._id,
-    edittableByUser: true,
-    ...findPrayersByPrayerId
-  });
-
-  // Remove from DB what was removed on the client.
-  for (const userCurrentCollection of userCurrentCollections) {
-    const { _id, title } = userCurrentCollection;
-
-    if (!collections.includes(title)) {
-      await updateCollection({ _id }, {
-        $pull: findPrayersByPrayerId
-      });
-    } else {
-      collections.splice(collections.indexOf(title), 1);
+    if (wasAnswered && !answered) {
+      await updateCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: user._id }, params(answered));
+    } else if (!wasAnswered && answered) {
+      await updateCollection({ title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS, owner: user._id }, params(!answered));
     }
   }
 
-
-  // Add the new ones
-  for (const colTitle of collections) {
-    await updateCollection({ title: colTitle, owner: user._id }, {
-      $push: findPrayersByPrayerId
+  if (collections) {
+    //2. Every other
+    const userCurrentCollections = await getCollection({
+      owner: user._id,
+      edittableByUser: true,
+      ...findPrayersByPrayerId
     });
+
+    // Remove from DB what was removed on the client.
+    for (const userCurrentCollection of userCurrentCollections) {
+      const { _id, title } = userCurrentCollection;
+
+      if (!collections.includes(title)) {
+        await updateCollection({ _id }, {
+          $pull: findPrayersByPrayerId
+        });
+      } else {
+        collections.splice(collections.indexOf(title), 1);
+      }
+    }
+    // Add the new ones
+    for (const colTitle of collections) {
+      await updateCollection({ title: colTitle, owner: user._id }, {
+        $push: findPrayersByPrayerId
+      });
+    }
   }
 
   const [updatedPrayer] = await getPrayer({  _id: _prayerId },

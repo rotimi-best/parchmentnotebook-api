@@ -1,11 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
-const { ObjectId } = mongoose.Types;
 const router = express.Router();
 const { getUser, updateUser } = require('../db/cruds/User');
 const { getPrayer } = require('../db/cruds/Prayer');
-const { getCollection } = require('../db/cruds/Collection');
 const { date, len, reduceDay } = require('../modules');
 
 // @route GET feed/userId
@@ -24,8 +22,8 @@ router.get('/:userId', async (req, res) => {
   }
 
   const { _id, lastDatePrayed } = user;
-  const yesterday = new Date(reduceDay(1)).getTime(); // new Date("2020-05-01").getTime()
-  const today = new Date(date()).getTime(); // new Date("2020-06-01").getTime()
+  const yesterday = new Date(`${reduceDay(1)} 00:00:00`).getTime(); // new Date("2020-05-01").getTime()
+  const today = new Date(`${date()} 00:00:00`).getTime(); // new Date("2020-06-01").getTime()
 
   if (lastDatePrayed !== yesterday && lastDatePrayed !== today) {
     user.streak = 0
@@ -34,41 +32,43 @@ router.get('/:userId', async (req, res) => {
     });
   }
 
-  const todaysDate = new Date(date())
   const prayersToday = await getPrayer({
     owner: _id,
     $and: [
       {
         start: {
-          $lte: todaysDate
+          $lte: today
         }
       },
       {
         end: {
-          $gte: todaysDate
+          $gte: today
         }
+      },
+      {
+        lastDatePrayed: { $ne: today }
       }
     ]
   });
 
-  const prayersTodayWithCollection =  [];
+  // const prayersTodayWithCollection =  [];
 
-  for (const prayer of prayersToday) {
-    prayer._doc.collection = await getCollection({ prayers: prayer._id });
+  // for (const prayer of prayersToday) {
+  //   prayer._doc.collection = await getCollection({ prayers: prayer._id });
 
-    prayersTodayWithCollection.push(prayer)
-  }
+  //   prayersTodayWithCollection.push(prayer)
+  // }
 
   const prayersPrayedToday = await getPrayer({
     owner: _id,
-    lastDatePrayed: todaysDate.getTime()
+    lastDatePrayed: today
   });
 
   return res.json({
     success: true,
-    user,
+    // user,
     streak: user.streak,
-    prayersToday: prayersTodayWithCollection,
+    prayersToday,
     prayersPrayedToday: len(prayersPrayedToday)
   });
 });

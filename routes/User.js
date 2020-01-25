@@ -12,29 +12,18 @@ const router = express.Router();
 // @route Authenticate user
 // @access Private
 router.post('/auth', async (req, res) => {
-  const {
-    email,
-    name,
-    pictureUrl,
-    userId,
-  } = req.body;
+  const { userId } = req.body;
 
   let [user] = await getUser({ userId });
 
   if (user) {
     // Update
     await updateUser({ userId }, {
-      email,
-      name,
-      pictureUrl,
       userId,
-    })
+    });
   } else {
     // Add
     user = await addUser({
-      email,
-      name,
-      pictureUrl,
       userId,
     });
 

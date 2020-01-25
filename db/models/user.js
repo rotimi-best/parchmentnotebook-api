@@ -4,9 +4,6 @@ const timestamp = require('mongoose-timestamp')
 
 const UserSchema = new Schema({
   userId: String,
-  email: String,
-  name: String,
-  pictureUrl: String,
   lastDatePrayed: {
     type: Number,
     default: Date.now()

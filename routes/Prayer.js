@@ -157,7 +157,9 @@ router.put('/:prayerId', async (req, res) => {
 
     if (wasAnswered && !answered) {
       await updateCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: user._id }, params(answered));
+      await updateCollection({ title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS, owner: user._id }, params(!answered));
     } else if (!wasAnswered && answered) {
+      await updateCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: user._id }, params(answered));
       await updateCollection({ title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS, owner: user._id }, params(!answered));
     }
   }

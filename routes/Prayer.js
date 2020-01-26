@@ -75,7 +75,7 @@ router.post('/', async (req, res) => {
     owner: user._id,
   });
 
-  collections.forEach(async title => {
+  collections.forEach(async ({ title }) => {
     await updateCollection({ title, owner: user._id }, {
       $push: { prayers: prayer._id }
     });
@@ -113,8 +113,10 @@ router.put('/:prayerId', async (req, res) => {
 
   const _prayerId = ObjectId(prayerId);
   const fieldsToUpdate = req.body;
-  const { lastDatePrayed = null, answered, collections } = fieldsToUpdate;
-
+  const { lastDatePrayed = null, answered } = fieldsToUpdate;
+  const collections = fieldsToUpdate.collections
+    ? fieldsToUpdate.collections.map(c => c.title || '')
+    : null;
   const [prayer] = await getPrayer({ _id: _prayerId }, null, null, ['owner']);
 
   if (!prayer) {

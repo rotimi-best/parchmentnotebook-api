@@ -76,6 +76,7 @@ router.get('/:collectionId', async (req, res) => {
 router.post('/', async (req, res) => {
   let {
     title = null,
+    color = '',
     userId,
     prayers // typeof array
   } = req.body;
@@ -102,6 +103,7 @@ router.post('/', async (req, res) => {
 
   const collection = await addCollection({
     title,
+    color,
     creator: user._id,
     owner: user._id,
     prayers

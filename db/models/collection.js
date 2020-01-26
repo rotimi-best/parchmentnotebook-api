@@ -4,6 +4,7 @@ const timestamp = require('mongoose-timestamp')
 
 const CollectionSchema = new Schema({
   title: String,
+  color: String,
   public: {
     type: Boolean,
     default: true

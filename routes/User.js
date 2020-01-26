@@ -33,6 +33,7 @@ router.post('/auth', async (req, res) => {
       edittableByUser: false,
       public: false,
       prayers: [],
+      color: "#4caf50",
       creator: user._id,
       owner: user._id,
     };
@@ -41,6 +42,7 @@ router.post('/auth', async (req, res) => {
       title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS,
       edittableByUser: false,
       public: false,
+      color: "#ffeb3b",
       prayers: [],
       creator: user._id,
       owner: user._id,

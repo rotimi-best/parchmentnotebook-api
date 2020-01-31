@@ -129,12 +129,11 @@ router.put('/:prayerId', async (req, res) => {
   // TODO: Add to JS interview questions. The diff between 1 and 2
   const { owner: user } = prayer; //1. const { id: userId } = user
 
-  await updatePrayer({ _id: _prayerId }, fieldsToUpdate); //2. updateUser({ id: userId })
+  await updatePrayer({ _id: _prayerId }, { $set: fieldsToUpdate }); //2. updateUser({ id: userId })
 
   // Note: if lastDatePrayed === todaysDate ? "User prayed today" : "Didn't pray today";
   if (lastDatePrayed && lastDatePrayed === today) {
-    const yesterday = new Date(`${reduceDay(1)} 00:00:00`).getTime(); // new Date("2020-05-01").getTime()
-
+    const yesterday = reduceDay(1, null, true);
     if (user.lastDatePrayed === yesterday && user.lastDatePrayed !== today) {
       await updateUser({ _id: user._id },  {
         lastDatePrayed: today,
@@ -143,8 +142,9 @@ router.put('/:prayerId', async (req, res) => {
         }
       });
     } else if (user.lastDatePrayed !== yesterday && user.lastDatePrayed !== today) {
-      await updateUser({ _id: user._id },  {
-        streak: 0
+      await updateUser({ _id: user._id },  { $set: {
+          streak: 0
+        }
       });
     }
   }
@@ -154,7 +154,9 @@ router.put('/:prayerId', async (req, res) => {
   // Update Collection
   // 1. Default
   if (typeof answered === "boolean") {
-    const params = bol => bol ? { $push: findPrayersByPrayerId } : { $pull: findPrayersByPrayerId }
+    const params = bol => bol
+      ? { $set: { $push: findPrayersByPrayerId } }
+      : { $set: { $pull: findPrayersByPrayerId } }
     const [wasAnswered] = await getCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: user._id, ...findPrayersByPrayerId });
 
     if (wasAnswered && !answered) {

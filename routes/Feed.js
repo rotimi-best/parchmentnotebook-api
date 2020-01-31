@@ -27,8 +27,9 @@ router.get('/:userId', async (req, res) => {
 
   if (lastDatePrayed !== yesterday && lastDatePrayed !== today) {
     user.streak = 0
-    await updateUser({ _id },  {
-      streak: user.streak
+    await updateUser({ _id },  { $set: {
+        streak: user.streak
+      }
     });
   }
 

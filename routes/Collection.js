@@ -148,7 +148,7 @@ router.put('/:collectionId', async (req, res) => {
     prayers = prayers.map(list => ObjectId(list._id));
   }
 
-  await updateCollection({ _id: _collectionId }, fieldsToUpdate);
+  await updateCollection({ _id: _collectionId }, { $set: fieldsToUpdate });
 
   const [updatedCollection] = await getCollection({ _id: _collectionId },
     null,

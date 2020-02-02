@@ -4,7 +4,7 @@ const { ObjectId } = mongoose.Types;
 
 const router = express.Router();
 const { getUser, updateUser } = require('../db/cruds/User');
-const { getPrayer, updatePrayer, addPrayer } = require('../db/cruds/Prayer');
+const { getPrayer, updatePrayer, addPrayer, deletePrayer } = require('../db/cruds/Prayer');
 const { getCollection, updateCollection } = require('../db/cruds/Collection');
 const { date, reduceDay } = require('../modules');
 const { DEFAULT_COLLECTION } = require('../helpers/constants');
@@ -207,6 +207,46 @@ router.put('/:prayerId', async (req, res) => {
     success: true,
     prayer: updatedPrayer
   });
+});
+
+// @route DELETE prayer/prayerId
+// @route Delete a prayer
+// @access Private
+router.delete('/:prayerId', async (req, res) => {
+  const { prayerId } = req.params;
+
+  if (!ObjectId.isValid(prayerId)) {
+    return res.status(404).json({
+      success: false,
+      message: 'Invalid prayer id'
+    });
+  }
+
+  const _prayerId = ObjectId(prayerId);
+  const [prayer] = await getPrayer({ _id: _prayerId });
+
+  if (!prayer) {
+    return res.status(404).json({
+      success: false,
+      message: 'Prayer not found'
+    });
+  }
+
+  const findPrayersByPrayerId = { prayers: _prayerId };
+  try {
+    await deletePrayer({ _id: _prayerId });
+
+    await updateCollection(findPrayersByPrayerId, {
+      $pull: findPrayersByPrayerId
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+
+  res.json({ success: true });
 });
 
 module.exports = router;

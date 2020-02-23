@@ -27,7 +27,7 @@ const PrayerSchema = new Schema({
   },
   lastDatePrayed: {
     type: Number,
-    default: Date.now()
+    default: 0
   },
   repeat: {
     type: String,

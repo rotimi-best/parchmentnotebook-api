@@ -70,7 +70,6 @@ router.post('/', async (req, res) => {
     end,
     repeat,
     note,
-    lastDatePrayed: today,
     creator: user._id,
     owner: user._id,
   });

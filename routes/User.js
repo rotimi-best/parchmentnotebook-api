@@ -31,6 +31,7 @@ router.post('/auth', async (req, res) => {
     const answered = {
       title: DEFAULT_COLLECTION.ANSWERED_PRAYERS,
       edittableByUser: false,
+      status: 1,
       public: false,
       prayers: [],
       color: "#4caf50",
@@ -41,6 +42,7 @@ router.post('/auth', async (req, res) => {
     const unanswered = {
       title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS,
       edittableByUser: false,
+      status: 0,
       public: false,
       color: "#ffeb3b",
       prayers: [],

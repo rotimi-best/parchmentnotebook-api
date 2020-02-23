@@ -13,6 +13,10 @@ const CollectionSchema = new Schema({
     type: Boolean,
     default: true
   },
+  status: {
+    type: Number,
+    default: 0
+  },
   creator: {
     type: Schema.Types.ObjectId,
     ref: 'User'

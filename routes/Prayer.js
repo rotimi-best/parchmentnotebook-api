@@ -154,8 +154,8 @@ router.put('/:prayerId', async (req, res) => {
   // 1. Default
   if (typeof answered === "boolean") {
     const params = bol => bol
-      ? { $set: { $push: findPrayersByPrayerId } }
-      : { $set: { $pull: findPrayersByPrayerId } }
+      ? { $push: findPrayersByPrayerId }
+      : { $pull: findPrayersByPrayerId }
     const [wasAnswered] = await getCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: user._id, ...findPrayersByPrayerId });
 
     if (wasAnswered && !answered) {

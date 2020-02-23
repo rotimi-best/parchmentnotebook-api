@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 
 const router = express.Router();
 const { getUser, updateUser } = require('../db/cruds/User');
@@ -35,19 +34,30 @@ router.get('/:userId', async (req, res) => {
 
   const prayersToday = await getPrayer({
     owner: _id,
-    $and: [
+    $or: [
       {
+        $and: [
+          {
+            start: {
+              $lte: today
+            }
+          },
+          {
+            end: {
+              $gte: today
+            }
+          },
+          {
+            lastDatePrayed: { $ne: today }
+          }
+        ]
+      },
+      {
+        lastDatePrayed: { $ne: today },
         start: {
           $lte: today
-        }
-      },
-      {
-        end: {
-          $gte: today
-        }
-      },
-      {
-        lastDatePrayed: { $ne: today }
+        },
+        repeat: 'daily'
       }
     ]
   });

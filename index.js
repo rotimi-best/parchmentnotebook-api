@@ -40,10 +40,20 @@ app.get('/', (req, res) => {
   res.send(`<h1>&copy; ${date.getFullYear()} :) </h1>`);
 });
 
-app.post('/subscription', (request, response) => {
-  subscription = request.body;
-  console.log('subscription', subscription)
-  response.status(201).json({});
+app.post('/subscription', (req, res) => {
+  const subscription = req.body;
+
+  // Send 201 - resource created
+  res.status(201).json({});
+
+  // Create payload
+  const payload = JSON.stringify({ title: "Push Test" });
+
+  // Pass object into sendNotification
+  webPush
+    .sendNotification(subscription, payload)
+    .then(res => console.log('res', res))
+    .catch(err => console.error(err));
 });
 
 app.post('/push', (req, res) => {

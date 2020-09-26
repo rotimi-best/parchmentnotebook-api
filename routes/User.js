@@ -1,6 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const { ObjectId } = mongoose.Types;
 
 const { addUser, getUser, updateUser } = require('../db/cruds/User');
 const { addCollection } = require('../db/cruds/Collection');
@@ -12,7 +10,7 @@ const router = express.Router();
 // @route Authenticate user
 // @access Private
 router.post('/auth', async (req, res) => {
-  const { userId } = req.body;
+  const { userId, googleAuthUser = {} } = req.body;
 
   let [user] = await getUser({ userId });
 
@@ -20,11 +18,13 @@ router.post('/auth', async (req, res) => {
     // Update
     await updateUser({ userId }, {
       userId,
+      googleAuthUser
     });
   } else {
     // Add
     user = await addUser({
       userId,
+      googleAuthUser
     });
 
     // Default collection for each user

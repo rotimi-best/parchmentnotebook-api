@@ -4,6 +4,7 @@ const timestamp = require('mongoose-timestamp')
 
 const UserSchema = new Schema({
   userId: String,
+  googleAuthUser: Object,
   lastDatePrayed: {
     type: Number,
     default: Date.now()
@@ -11,7 +12,8 @@ const UserSchema = new Schema({
   streak: {
     type: Number,
     default: 0
-  }
+  },
+  subscriptions: []
 });
 
 UserSchema.plugin(timestamp);

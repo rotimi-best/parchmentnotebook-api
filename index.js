@@ -5,7 +5,6 @@ const { PORT = 9000 } = process.env;
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const webPush = require('web-push');
 const bodyParser = require('body-parser');
 
 const connectToDb = require('./db/connect')
@@ -13,12 +12,8 @@ const Collection = require('./routes/Collection');
 const Prayer = require('./routes/Prayer');
 const Feed = require('./routes/Feed');
 const User = require('./routes/User');
-
-let subscription
-const publicVapidKey = process.env.PUBLIC_VAPID_KEY;
-const privateVapidKey =  process.env.PRIVATE_VAPID_KEY;
-
-webPush.setVapidDetails('mailto:rotimiibitoyeemma@gmail.com', publicVapidKey, privateVapidKey);
+const NotificationAPI = require('./helpers/pushNotificiation');
+const { updateUser } = require('./db/cruds/User');
 
 // MONGODB CONNECTION
 connectToDb()
@@ -40,33 +35,22 @@ app.get('/', (req, res) => {
   res.send(`<h1>&copy; ${date.getFullYear()} :) </h1>`);
 });
 
-app.post('/subscription', (req, res) => {
-  const subscription = req.body;
+app.post('/subscription', async (req, res) => {
+  const { subscription: stringedSubs, userId } = req.body;
+  const subscription = JSON.parse(stringedSubs);
+
+  await updateUser({ userId }, {
+    $push: { subscriptions: subscription }
+  });
 
   // Send 201 - resource created
   res.status(201).json({});
 
-  // Create payload
-  const payload = JSON.stringify({ title: "Push Test" });
-
-  // Pass object into sendNotification
-  webPush
-    .sendNotification(subscription, payload)
-    .then(res => console.log('res', res))
-    .catch(err => console.error(err));
-});
-
-app.post('/push', (req, res) => {
-  const payload = JSON.stringify({
-    title: 'Dont forget to pray today :)'
+  NotificationAPI.sendPush(subscription, {
+    title: 'Thank you.',
+    body: 'Start by adding a new prayer request',
   });
-
-  webPush.sendNotification(subscription, 'Dont forget to pray today :)')
-    .then(result => console.log('result', result))
-    .catch(err => console.error('Error subscribing', err))
-
-  res.status(200).json({});
-})
+});
 
 app.use('/user', User);
 

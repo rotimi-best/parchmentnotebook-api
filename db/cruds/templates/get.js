@@ -9,7 +9,10 @@ module.exports = (
       const findResult = mongooseModel.find(params, selectedFields, sort)
 
       if (populateField && Array.isArray(populateField) && populateField.length) {
-        populateField.forEach(field => findResult.populate(field))
+        populateField.forEach(aField => {
+          const popParam = Array.isArray(aField) ? aField : [aField];
+          findResult.populate(...popParam)
+        })
       }
 
       findResult.exec((err, texts) => {

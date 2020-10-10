@@ -13,7 +13,7 @@ webPush.setVapidDetails(`mailto:${adminEmail}`, publicVapidKey, privateVapidKey)
  * @param {object} subscription Device subscription data
  * @param {object} data Notification options: title*, body*, url
  */
-const sendPush = async (subscription, data) => {
+const sendPush = async (subscription, data, onError) => {
   // Create payload - title, body are required
   const payload = JSON.stringify({
     icon: `${clientUrl}/images/icons/icon-128x128.png`,
@@ -25,6 +25,9 @@ const sendPush = async (subscription, data) => {
     await webPush.sendNotification(subscription, payload);
   } catch (error) {
     console.error('Error while sending push', error)
+    if (onError && typeof(onError) === "function") {
+      onError(error)
+    }
   }
 
   return null;

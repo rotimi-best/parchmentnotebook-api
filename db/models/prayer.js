@@ -33,7 +33,22 @@ const PrayerSchema = new Schema({
     type: String,
     enum: ['daily', 'weekly', 'monthly', 'yearly', 'never'],
     default: 'daily'
-  }
+  },
+  comments: [
+    {
+      comment: String,
+      author: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    }
+  ],
+  intercessors: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  ],
 });
 
 PrayerSchema.plugin(timestamp);

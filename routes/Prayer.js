@@ -217,6 +217,29 @@ router.put('/:userId/:prayerId', async (req, res) => {
           sendPrayerPush(userToSendPush[0], prayerId, { isComment: true });
         }
       })
+    } else {
+      // Get users watching prayer remove duplicates
+      const usersWatchingPrayer = [
+        ...prayer.intercessors,
+        ...(prayer.comments
+            .filter(comment => comment.author != `${user._id}`)
+            .map(comment => `${comment.author}`)
+          )
+      ].reduce((acc, _userId) => {
+        if (!acc.includes(`${_userId}`)) {
+          acc.push(`${_userId}`);
+        }
+
+        return acc;
+      }, []);
+
+      getUser({ _id: { $in: usersWatchingPrayer }, subscriptions: { $gt: [] } })
+      .then((userToSendPush) => {
+        console.log('userToSendPush', userToSendPush);
+        if (userToSendPush.length) {
+          sendPrayerPush(userToSendPush[0], prayerId, { isComment: true });
+        }
+      })
     }
   }
 

@@ -7,6 +7,10 @@ const { getUser } = require('../db/cruds/User');
 const { updateCollection, getCollection, addCollection } = require('../db/cruds/Collection');
 const { len } = require('../modules');
 
+const fieldsToGetFromUserModel = [
+  ['owner', 'googleAuthUser.name googleAuthUser.picture userId createdAt'],
+];
+
 // @route GET /collection/:userId
 // @route Get All Collections of a particular user
 // @access Private
@@ -23,14 +27,18 @@ router.get('/', async (req, res) => {
   }
 
   const collections = await getCollection({
-    owner: user._id,
-  }, { sort: { title: 1 } }, null, ['prayers', 'creator']);
+      owner: user._id,
+    },
+    { sort: { title: 1 } },
+    null,
+    ['creator', 'prayers']
+  );
 
-  for (const collection of collections) {
-    for (const prayer of collection.prayers) {
-      prayer._doc.collections = await getCollection({ prayers: prayer._id });
-    }
-  }
+  // for (const collection of collections) {
+  //   for (const prayer of collection.prayers) {
+  //     prayer._doc.collections = await getCollection({ prayers: prayer._id });
+  //   }
+  // }
 
   res.json({ success: true, collections });
 });
@@ -61,11 +69,12 @@ router.get('/:collectionId', async (req, res) => {
   const [collection] = await getCollection({
     _id: ObjectId(collectionId),
     owner: user._id,
-  }, { sort: { createdAt: -1 } }, null, ['prayers', 'creator']);
+  }, { sort: { createdAt: -1 } }, null, ['prayers', ...fieldsToGetFromUserModel]);
 
-  for (const prayer of collection.prayers) {
-    prayer._doc.collections = await getCollection({ prayers: prayer._id });
-  }
+  // for (const prayer of collection.prayers) {
+  //   // prayer._doc.collections = await getCollection({ prayers: prayer._id });
+  //   prayer._doc.owner = collection.owner;
+  // }
 
   res.json({ success: true, collection });
 });

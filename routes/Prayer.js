@@ -126,7 +126,7 @@ router.post('/', async (req, res) => {
       message: 'User not found'
     });
   }
-
+  console.log('user', user)
   const prayer = await addPrayer({
     description,
     answered,
@@ -153,6 +153,9 @@ router.post('/', async (req, res) => {
   });
 
   prayer._doc.collections = await getCollection({ prayers: prayer._id });
+  prayer._doc.owner = user
+  prayer._doc.isOwner = true;
+  prayer._doc.interceeding = false;
 
   res.json({
     success: true,

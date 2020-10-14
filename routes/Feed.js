@@ -5,6 +5,7 @@ const { getUser, updateUser } = require('../db/cruds/User');
 const { getQuote, updateQuote } = require('../db/cruds/Quote');
 const { getPrayer } = require('../db/cruds/Prayer');
 const { date, len, reduceDay } = require('../modules');
+const removeDuplicatesOfStringInArr = require('../helpers/removeDuplicatesOfStringInArr');
 
 const fieldsToGetFromUserModel = [['comments.author', 'googleAuthUser.name googleAuthUser.picture']];
 
@@ -151,20 +152,18 @@ router.put('/:userId/:quoteId', async (req, res) => {
   if ('loved' in req.body) {
     updateParams['loves'] = loved
       ? [...quote.loves, user._id]
-      : quote.loves.filter(userId => userId !== user._id);
+      : quote.loves.filter(userId => `${userId}` !== `${user._id}`);
+
+    updateParams['loves'] = removeDuplicatesOfStringInArr(updateParams['loves'])
   }
 
-  console.log('updateParams', updateParams)
-  const updatedQuoteRes = await updateQuote({ _id: quoteId }, updateParams);
+  await updateQuote({ _id: quoteId }, updateParams);
 
   const [updatedQuote] = await getQuote({ _id: quoteId },
     null,
     null,
     fieldsToGetFromUserModel
   );
-
-  console.log('updatedQuoteRes', updatedQuoteRes);
-  console.log('updatedQuote', updatedQuote);
 
   updatedQuote._doc.isLovedByMe = Array.isArray(updatedQuote.loves)
     ? updatedQuote.loves.includes(user._id)

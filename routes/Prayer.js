@@ -8,6 +8,7 @@ const { getPrayer, updatePrayer, addPrayer, deletePrayer } = require('../db/crud
 const { getCollection, updateCollection } = require('../db/cruds/Collection');
 const { date } = require('../modules');
 const sendPrayerPush = require('../helpers/sendPrayerPush');
+const removeDuplicatesOfStringInArr = require('../helpers/removeDuplicatesOfStringInArr');
 const { DEFAULT_COLLECTION } = require('../helpers/constants');
 
 const fieldsToGetFromUserModel = [
@@ -222,23 +223,16 @@ router.put('/:userId/:prayerId', async (req, res) => {
       })
     } else {
       // Get users watching prayer remove duplicates
-      const usersWatchingPrayer = [
+      const usersWatchingPrayer = removeDuplicatesOfStringInArr([
         ...prayer.intercessors,
         ...(prayer.comments
             .filter(comment => comment.author != `${user._id}`)
             .map(comment => `${comment.author}`)
           )
-      ].reduce((acc, _userId) => {
-        if (!acc.includes(`${_userId}`)) {
-          acc.push(`${_userId}`);
-        }
-
-        return acc;
-      }, []);
+      ]);
 
       getUser({ _id: { $in: usersWatchingPrayer }, subscriptions: { $gt: [] } })
       .then((userToSendPush) => {
-        console.log('userToSendPush', userToSendPush);
         if (userToSendPush.length) {
           sendPrayerPush(userToSendPush[0], prayerId, { isComment: true });
         }

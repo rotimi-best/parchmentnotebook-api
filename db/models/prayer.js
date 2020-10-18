@@ -34,6 +34,7 @@ const PrayerSchema = new Schema({
     enum: ['daily', 'weekly', 'monthly', 'yearly', 'never'],
     default: 'daily'
   },
+  passages: Array,
   comments: [
     {
       comment: String,

@@ -110,10 +110,9 @@ router.post('/', async (req, res) => {
   const today = date({ toUTC: true });
   const {
     description = '',
-    repeat,
-    note,
     answered = false,
     collections,
+    passages,
     start = today,
     end = today,
     userId,
@@ -133,8 +132,7 @@ router.post('/', async (req, res) => {
     answered,
     start,
     end,
-    repeat,
-    note,
+    passages,
     creator: user._id,
     owner: user._id,
   });

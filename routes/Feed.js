@@ -6,9 +6,16 @@ const { getQuote, updateQuote } = require('../db/cruds/Quote');
 const { getPrayer } = require('../db/cruds/Prayer');
 const { date, len, reduceDay } = require('../modules');
 const removeDuplicatesOfStringInArr = require('../helpers/removeDuplicatesOfStringInArr');
+const { bible } = require("../helpers/getBible");
 
 const fieldsToGetFromUserModel = [['comments.author', 'googleAuthUser.name googleAuthUser.picture']];
+const passage = {
+  bible: 'Genesis',
+  chapter: '3',
+  verses: ['1','4', '10']
+}
 
+console.log(bible[passage.bible][passage.chapter][passage.verses[0]]);
 // @route GET feed/userId
 // @route Get home feed data
 // @access Private

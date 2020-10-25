@@ -44,13 +44,13 @@ const sendQuote = async () => {
     }
 
     // if error found remove such subscription
-    if (hadAPushError) {
-      await updateUser({ _id: user._id }, {
-        subscriptions: _subscriptions
-      });
+    // if (hadAPushError) {
+    //   await updateUser({ _id: user._id }, {
+    //     subscriptions: _subscriptions
+    //   });
 
-      hadAPushError = false;
-    }
+    //   hadAPushError = false;
+    // }
 
     await sleep();
   }

@@ -6,10 +6,18 @@ const router = express.Router();
 const { getUser } = require('../db/cruds/User');
 const { updateCollection, getCollection, addCollection } = require('../db/cruds/Collection');
 const { len } = require('../modules');
+const getVerses = require('../helpers/getVerses');
 
 const fieldsToGetFromUserModel = [
   ['owner', 'googleAuthUser.name googleAuthUser.picture userId createdAt'],
 ];
+
+const getPassages = passages => passages.map(passage => {
+  return {
+    label: passage,
+    verses: getVerses(passage)
+  }
+})
 
 // @route GET /collection/:userId
 // @route Get All Collections of a particular user
@@ -34,11 +42,11 @@ router.get('/', async (req, res) => {
     ['creator', 'prayers']
   );
 
-  // for (const collection of collections) {
-  //   for (const prayer of collection.prayers) {
-  //     prayer._doc.collections = await getCollection({ prayers: prayer._id });
-  //   }
-  // }
+  collections.forEach(collection => {
+    collection.prayers.map(prayer => {
+      prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
+    })
+  });
 
   res.json({ success: true, collections });
 });
@@ -71,10 +79,9 @@ router.get('/:collectionId', async (req, res) => {
     owner: user._id,
   }, { sort: { createdAt: -1 } }, null, ['prayers', ...fieldsToGetFromUserModel]);
 
-  // for (const prayer of collection.prayers) {
-  //   // prayer._doc.collections = await getCollection({ prayers: prayer._id });
-  //   prayer._doc.owner = collection.owner;
-  // }
+  for (const prayer of collection.prayers) {
+    prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
+  }
 
   res.json({ success: true, collection });
 });
@@ -120,6 +127,7 @@ router.post('/', async (req, res) => {
 
   for (const prayer of collection.prayers) {
     prayer._doc.collections = await getCollection({ prayers: prayer._id });
+    prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
   }
 
   res.json({
@@ -167,6 +175,7 @@ router.put('/:collectionId', async (req, res) => {
 
   for (const prayer of updatedCollection.prayers) {
     prayer._doc.collections = await getCollection({ prayers: prayer._id });
+    prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
   }
 
   res.json({

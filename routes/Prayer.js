@@ -8,6 +8,7 @@ const { getPrayer, updatePrayer, addPrayer, deletePrayer } = require('../db/crud
 const { getCollection, updateCollection } = require('../db/cruds/Collection');
 const { date } = require('../modules');
 const sendPrayerPush = require('../helpers/sendPrayerPush');
+const getVerses = require('../helpers/getVerses');
 const removeDuplicatesOfStringInArr = require('../helpers/removeDuplicatesOfStringInArr');
 const { DEFAULT_COLLECTION } = require('../helpers/constants');
 
@@ -15,6 +16,13 @@ const fieldsToGetFromUserModel = [
   ['owner', 'googleAuthUser.name googleAuthUser.picture'],
   ['comments.author', 'googleAuthUser.name googleAuthUser.picture'],
 ];
+
+const getPassages = passages => passages.map(passage => {
+  return {
+    label: passage,
+    verses: getVerses(passage)
+  }
+})
 
 // @route GET /prayer/userId
 // @route Get All Prayer Request
@@ -42,6 +50,7 @@ router.get('/:userId', async (req, res) => {
     prayer._doc.interceeding = prayer.intercessors.includes(user._id);
     prayer._doc.intercessors = prayer._doc.intercessors.length;
     prayer._doc.isOwner = `${user._id}` == `${prayer.creator}`;
+    prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
 
     prayersWithCollection.push(prayer)
   }
@@ -56,6 +65,7 @@ router.get('/:userId', async (req, res) => {
     prayer._doc.interceeding = true;
     prayer._doc.intercessors = prayer._doc.intercessors.length;
     prayer._doc.isOwner = false;
+    prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
 
     formattedInterceedingPrayer.push(prayer)
   }
@@ -96,6 +106,7 @@ router.get('/:userId/:prayerId', async (req, res) => {
   prayer._doc.collections = await getCollection({ prayers: prayer._id });
   prayer._doc.isOwner = `${user._id}` == `${prayer.creator}`;
   prayer._doc.interceeding = prayer.intercessors.includes(user._id);
+  prayer._doc.formattedPassages = getPassages(prayer._doc.passages)
 
   res.json({
     success: true,
@@ -126,7 +137,7 @@ router.post('/', async (req, res) => {
       message: 'User not found'
     });
   }
-  console.log('user', user)
+
   const prayer = await addPrayer({
     description,
     answered,
@@ -155,6 +166,7 @@ router.post('/', async (req, res) => {
   prayer._doc.owner = user
   prayer._doc.isOwner = true;
   prayer._doc.interceeding = false;
+  prayer._doc.formattedPassages = getPassages(prayer._doc.passages)
 
   res.json({
     success: true,
@@ -333,6 +345,7 @@ router.put('/:userId/:prayerId', async (req, res) => {
 
   updatedPrayer._doc.collections = await getCollection(findPrayersByPrayerId);
   updatedPrayer._doc.isOwner = true;
+  updatedPrayer._doc.formattedPassages = getPassages(updatedPrayer._doc.passages)
 
   res.json({
     success: true,

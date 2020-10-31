@@ -344,7 +344,7 @@ router.put('/:userId/:prayerId', async (req, res) => {
   );
 
   updatedPrayer._doc.collections = await getCollection(findPrayersByPrayerId);
-  updatedPrayer._doc.isOwner = true;
+  updatedPrayer._doc.isOwner = !isNotOwner;
   updatedPrayer._doc.formattedPassages = getPassages(updatedPrayer._doc.passages)
 
   res.json({

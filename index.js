@@ -1,5 +1,6 @@
 require('dotenv').config();
 require('./helpers/additionalInit');
+require('newrelic');
 const { PORT = 9000 } = process.env;
 
 const express = require('express');

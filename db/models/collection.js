@@ -17,6 +17,12 @@ const CollectionSchema = new Schema({
     type: Number,
     default: 0
   },
+  people: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  ],
   creator: {
     type: Schema.Types.ObjectId,
     ref: 'User'

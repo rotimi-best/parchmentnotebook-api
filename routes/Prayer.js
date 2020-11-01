@@ -228,7 +228,7 @@ router.put('/:userId/:prayerId', async (req, res) => {
       getUser({ _id: ObjectId(prayer.owner._id), subscriptions: { $gt: [] } })
       .then((userToSendPush) => {
         if (userToSendPush.length) {
-          sendPrayerPush(userToSendPush[0], prayerId, { isComment: true });
+          sendPrayerPush(userToSendPush[0], {prayerId}, { isComment: true });
         }
       })
     } else {
@@ -244,7 +244,7 @@ router.put('/:userId/:prayerId', async (req, res) => {
       getUser({ _id: { $in: usersWatchingPrayer }, subscriptions: { $gt: [] } })
       .then((userToSendPush) => {
         if (userToSendPush.length) {
-          sendPrayerPush(userToSendPush[0], prayerId, { isComment: true });
+          sendPrayerPush(userToSendPush[0], {prayerId}, { isComment: true });
         }
       })
     }
@@ -260,7 +260,7 @@ router.put('/:userId/:prayerId', async (req, res) => {
       getUser({ _id: ObjectId(prayer.owner._id), subscriptions: { $gt: [] } })
       .then((userToSendPush) => {
         if (userToSendPush.length) {
-          sendPrayerPush(userToSendPush[0], prayerId, { isIntercession: true });
+          sendPrayerPush(userToSendPush[0], {prayerId}, { isIntercession: true });
         }
       })
     }

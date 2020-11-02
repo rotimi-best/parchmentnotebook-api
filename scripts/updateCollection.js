@@ -25,7 +25,8 @@ connectToDb();
     //   }
     // }
     await updateCollection({ _id }, {
-      people: [owner]
+      // people: [owner]
+      public: false
     })
   }
 

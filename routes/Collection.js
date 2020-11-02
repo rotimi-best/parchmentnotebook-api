@@ -39,13 +39,24 @@ router.get('/', async (req, res) => {
   const collections = await getCollection({
       owner: user._id,
     },
-    { sort: { title: 1 } }
+    { sort: { title: 1 } },
+    null,
+      [fieldsToGetFromUserModel[0]]
   );
   const sharedWithMe = await getCollection({
     people: user._id,
     owner: { $ne: user._id }
   },
-    { sort: { title: 1 } }
+  { sort: { title: 1 } },
+  null,
+    [fieldsToGetFromUserModel[0]]
+  );
+  const suggestedCollections = await getCollection({
+    public: true,
+  },
+  { sort: { title: 1 } },
+  null,
+    [fieldsToGetFromUserModel[0]]
   );
 
   // collections.forEach(collection => {
@@ -54,7 +65,7 @@ router.get('/', async (req, res) => {
   //   })
   // });
 
-  res.json({ success: true, collections, sharedWithMe });
+  res.json({ success: true, collections, sharedWithMe, suggestedCollections });
 });
 
 // @route GET /collection/:collectionId

@@ -7,7 +7,7 @@ const CollectionSchema = new Schema({
   color: String,
   public: {
     type: Boolean,
-    default: true
+    default: false
   },
   edittableByUser: {
     type: Boolean,

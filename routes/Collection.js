@@ -4,7 +4,7 @@ const { ObjectId } = mongoose.Types;
 
 const router = express.Router();
 const { getUser } = require('../db/cruds/User');
-const { updateCollection, getCollection, addCollection } = require('../db/cruds/Collection');
+const { updateCollection, getCollection, addCollection, deleteCollection } = require('../db/cruds/Collection');
 const { len } = require('../modules');
 const getVerses = require('../helpers/getVerses');
 const sendPrayerPush = require('../helpers/sendPrayerPush');
@@ -223,6 +223,41 @@ router.put('/:collectionId', async (req, res) => {
     success: true,
     collection: updatedCollection
   });
+});
+
+// @route DELETE collection/collectionId
+// @route Delete a Collection
+// @access Private
+router.delete('/:collectionId', async (req, res) => {
+  const { collectionId } = req.params;
+  console.log('collectionId', collectionId)
+  if (!ObjectId.isValid(collectionId)) {
+    return res.status(404).json({
+      success: false,
+      message: 'Invalid collection id'
+    });
+  }
+
+  const _collectionId = ObjectId(collectionId);
+  const [collection] = await getCollection({ _id: _collectionId });
+
+  if (!collection) {
+    return res.status(404).json({
+      success: false,
+      message: 'Collection not found'
+    });
+  }
+
+  try {
+    await deleteCollection({ _id: _collectionId });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+
+  res.json({ success: true });
 });
 
 module.exports = router;

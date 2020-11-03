@@ -26,8 +26,11 @@ connectToDb();
     // }
     await updateCollection({ _id }, {
       // people: [owner]
-      public: false
-    })
+      // public: false
+      description: '',
+      comments: [],
+      relatedCollections: [],
+    });
   }
 
   console.log('list', list)

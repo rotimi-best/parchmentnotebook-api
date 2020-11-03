@@ -109,6 +109,7 @@ router.get('/:collectionId', async (req, res) => {
 router.post('/', async (req, res) => {
   let {
     title = null,
+    description = null,
     color = '',
     userId,
     prayers // typeof array
@@ -137,6 +138,7 @@ router.post('/', async (req, res) => {
   const collection = await addCollection({
     title,
     color,
+    description,
     creator: user._id,
     owner: user._id,
     people: [user._id],

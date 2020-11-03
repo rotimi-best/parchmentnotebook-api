@@ -5,6 +5,7 @@ const timestamp = require('mongoose-timestamp')
 const CollectionSchema = new Schema({
   title: String,
   color: String,
+  description: String,
   public: {
     type: Boolean,
     default: false
@@ -17,6 +18,21 @@ const CollectionSchema = new Schema({
     type: Number,
     default: 0
   },
+  comments: [
+    {
+      comment: String,
+      author: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    }
+  ],
+  relatedCollections: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Collection'
+    }
+  ],
   people: [
     {
       type: Schema.Types.ObjectId,

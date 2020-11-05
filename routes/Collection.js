@@ -82,7 +82,7 @@ router.get('/:collectionId', async (req, res) => {
     });
   }
 
-  const [user] = await getUser({ userId });
+  const [user = {}] = await getUser({ userId });
 
   if (!user) {
     return res.status(404).json({
@@ -232,7 +232,7 @@ router.put('/:collectionId', async (req, res) => {
 // @access Private
 router.delete('/:collectionId', async (req, res) => {
   const { collectionId } = req.params;
-  console.log('collectionId', collectionId)
+
   if (!ObjectId.isValid(collectionId)) {
     return res.status(404).json({
       success: false,

@@ -12,28 +12,36 @@ connectToDb();
   const collections = await getCollection({ _id: { $exists: true } });
   console.log('collections.length', collections.length)
   const list = {};
-  for (const collection of collections) {
-    const { _id, owner, title } = collection;
+  // for (const collection of collections) {
+    // const { _id, owner, title, edittableByUser } = collection;
     // if (list[owner]) {
-    //   list[owner].collections.push(title)
+    //   list[owner].collections.push({
+    //     title,
+    //     edittableByUser
+    //   })
     // } else {
     //   const [user] = await getUser({ _id: owner })
     //   // console.log('user.googleAuthUser', user.googleAuthUser)
     //   list[owner] = {
     //     name: user.googleAuthUser ? user.googleAuthUser.name : owner,
-    //     collections: [title]
+    //     collections: [{
+    //       title,
+    //       edittableByUser
+    //     }]
     //   }
     // }
-    await updateCollection({ _id }, {
-      // people: [owner]
-      // public: false
-      description: '',
-      comments: [],
-      relatedCollections: [],
-    });
-  }
-
-  console.log('list', list)
+    // await updateCollection({ _id }, {
+    //   // people: [owner]
+    //   // public: false
+    //   description: '',
+    //   comments: [],
+    //   relatedCollections: [],
+    // });
+  // }
+  await updateCollection({ title: 'Unanswered Prayers' }, {
+    edittableByUser: false
+  });
+  // console.log('list', JSON.stringify(list))
 
   process.exit(1);
 })()

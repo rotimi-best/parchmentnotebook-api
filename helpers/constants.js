@@ -8,6 +8,10 @@ module.exports = {
     DEFAULT_COLLECTION: {
       ANSWERED_PRAYERS: 'Answered Prayers',
       UNANSWERED_PRAYERS: 'Unanswered Prayers',
+      FAMILY: 'Family',
+      SPIRITUAL_LIFE: 'Spiritual life',
+      FINANCE: 'Finance',
+      CHURCH: 'Church',
     },
     DAYS: {
       LONG: [

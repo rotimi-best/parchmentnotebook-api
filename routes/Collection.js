@@ -95,10 +95,12 @@ router.get('/:collectionId', async (req, res) => {
     _id: ObjectId(collectionId),
     // owner: user._id,// Allow not the owner see the collection
   }, { sort: { createdAt: -1 } }, null, ['prayers', ...fieldsToGetFromUserModel]);
-  collection._doc.edittableByUser = `${collection.owner._id}` === `${user._id}`;
+  collection._doc.edittableByUser = collection._doc.edittableByUser && `${collection.owner._id}` === `${user._id}`;
 
   for (const prayer of collection.prayers) {
     prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
+    prayer._doc.interceeding = prayer._doc.intercessors.includes(user._id);
+    prayer._doc.isOwner = `${user._id}` == `${prayer._doc.creator}`;
   }
   res.json({ success: true, collection });
 });
@@ -218,6 +220,7 @@ router.put('/:collectionId', async (req, res) => {
 
   for (const prayer of updatedCollection.prayers) {
     prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
+    prayer._doc.interceeding = prayer._doc.intercessors.includes(user._id);
   }
   updatedCollection._doc.edittableByUser = `${updatedCollection.owner._id}` === `${user._id}`;
 

@@ -9,13 +9,13 @@ connectToDb();
 (async() => {
 
   await updatePrayer({ _id: { $exists: true }}, {
-    comments: [],
-    intercessors: [],
+    public: false,
+    // intercessors: [],
   });
 
-  const prayer = await getPrayer({}, {
-    limit: 1
-  });
+  // const prayer = await getPrayer({}, {
+  //   limit: 1
+  // });
 
   process.exit(1);
 })()

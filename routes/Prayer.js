@@ -126,6 +126,7 @@ router.post('/', async (req, res) => {
     passages,
     start = today,
     end = today,
+    public = false,
     userId,
   } = req.body;
 
@@ -141,6 +142,7 @@ router.post('/', async (req, res) => {
   const prayer = await addPrayer({
     description,
     answered,
+    public,
     start,
     end,
     passages,

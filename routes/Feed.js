@@ -6,8 +6,19 @@ const { getQuote, updateQuote } = require('../db/cruds/Quote');
 const { getPrayer } = require('../db/cruds/Prayer');
 const { date, len, reduceDay } = require('../modules');
 const removeDuplicatesOfStringInArr = require('../helpers/removeDuplicatesOfStringInArr');
+const getVerses = require('../helpers/getVerses');
 
-const fieldsToGetFromUserModel = [['comments.author', 'googleAuthUser.name googleAuthUser.picture']];
+const fieldsToGetFromUserModel = [
+  ['owner', 'googleAuthUser.name googleAuthUser.picture'],
+  ['comments.author', 'googleAuthUser.name googleAuthUser.picture']
+];
+
+const getPassages = passages => passages.map(passage => {
+  return {
+    label: passage,
+    verses: getVerses(passage)
+  }
+})
 
 // @route GET feed/userId
 // @route Get home feed data
@@ -39,35 +50,35 @@ router.get('/:userId', async (req, res) => {
   //   });
   // }
 
-  const prayersToday = await getPrayer({
-    owner: _id,
-    $or: [
-      {
-        $and: [
-          {
-            start: {
-              $lte: today
-            }
-          },
-          {
-            end: {
-              $gte: today
-            }
-          },
-          {
-            lastDatePrayed: { $ne: today }
-          }
-        ]
-      },
-      {
-        lastDatePrayed: { $ne: today },
-        start: {
-          $lte: today
-        },
-        repeat: 'daily'
-      }
-    ]
-  });
+  // const prayersToday = await getPrayer({
+  //   owner: _id,
+  //   $or: [
+  //     {
+  //       $and: [
+  //         {
+  //           start: {
+  //             $lte: today
+  //           }
+  //         },
+  //         {
+  //           end: {
+  //             $gte: today
+  //           }
+  //         },
+  //         {
+  //           lastDatePrayed: { $ne: today }
+  //         }
+  //       ]
+  //     },
+  //     {
+  //       lastDatePrayed: { $ne: today },
+  //       start: {
+  //         $lte: today
+  //       },
+  //       repeat: 'daily'
+  //     }
+  //   ]
+  // });
 
   // const prayersTodayWithCollection =  [];
 
@@ -81,6 +92,16 @@ router.get('/:userId', async (req, res) => {
   //   owner: _id,
   //   lastDatePrayed: today
   // });
+
+  const publicPrayers = await getPrayer({
+    public: true,
+    answered: false
+  },
+  { sort: { createdAt: -1 } }, null, [fieldsToGetFromUserModel[0]]);
+  for (const prayer of publicPrayers) {
+    prayer._doc.interceeding = prayer.intercessors.includes(user._id);
+    prayer._doc.formattedPassages = getPassages(prayer._doc.passages)
+  }
 
   if (quoteId) {
     const [minimumQuote] = await getQuote({ _id: quoteId },
@@ -107,7 +128,8 @@ router.get('/:userId', async (req, res) => {
     success: true,
     // user,
     // streak: user.streak,
-    prayersToday,
+    prayersToday: [],
+    publicPrayers,
     quote,
     // prayersPrayedToday: len(prayersPrayedToday)
   });

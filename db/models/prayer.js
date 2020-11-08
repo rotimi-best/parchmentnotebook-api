@@ -50,6 +50,7 @@ const PrayerSchema = new Schema({
       ref: 'User'
     }
   ],
+  public: Boolean,
 });
 
 PrayerSchema.plugin(timestamp);

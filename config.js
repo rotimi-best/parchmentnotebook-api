@@ -1,6 +1,6 @@
 const {
-  CLIENT_URL = 'https://parchmentnotebook.netlify.app',
-  SERVER_URL = 'https://parchmentnotebook-api.glitch.me',
+  CLIENT_URL = 'https://prayerkeep.com',
+  SERVER_URL = 'https://parchmentnotebook.herokuapp.com',
   ADMING_EMAIL = 'rotimiibitoyeemma@gmail.com',
   PUBLIC_VAPID_KEY,
   PRIVATE_VAPID_KEY

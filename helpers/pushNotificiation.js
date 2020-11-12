@@ -24,7 +24,7 @@ const sendPush = async (subscription, data, onError) => {
   try {
     await webPush.sendNotification(subscription, payload);
   } catch (error) {
-    console.error('Error while sending push', error)
+    console.error('Error while sending push')
     if (onError && typeof(onError) === "function") {
       onError(error)
     }

@@ -230,7 +230,12 @@ router.put('/:userId/:prayerId', async (req, res) => {
       getUser({ _id: ObjectId(prayer.owner._id), subscriptions: { $gt: [] } })
       .then((userToSendPush) => {
         if (userToSendPush.length) {
-          sendPrayerPush(userToSendPush[0], {prayerId}, { isComment: true });
+          console.log('about to send a push - to owner', new Date())
+          sendPrayerPush(userToSendPush[0], {prayerId}, {
+            isComment: true,
+            senderName: user.googleAuthUser.name,
+            body: newComment.comment
+          });
         }
       })
     } else {
@@ -246,7 +251,12 @@ router.put('/:userId/:prayerId', async (req, res) => {
       getUser({ _id: { $in: usersWatchingPrayer }, subscriptions: { $gt: [] } })
       .then((userToSendPush) => {
         if (userToSendPush.length) {
-          sendPrayerPush(userToSendPush[0], {prayerId}, { isComment: true });
+          console.log('about to send a push - to not owner', new Date())
+          sendPrayerPush(userToSendPush[0], {prayerId}, {
+            isComment: true,
+            senderName: user.googleAuthUser.name,
+            body: newComment.comment
+          });
         }
       })
     }
@@ -258,11 +268,14 @@ router.put('/:userId/:prayerId', async (req, res) => {
       : prayer.intercessors.filter(userId => userId != `${user._id}`);
 
     if (req.body.interceeding && isNotOwner) {
+      console.log('sending notitification to the owner that someone is praying for them')
       // send push to owner
       getUser({ _id: ObjectId(prayer.owner._id), subscriptions: { $gt: [] } })
       .then((userToSendPush) => {
-        if (userToSendPush.length) {
-          sendPrayerPush(userToSendPush[0], {prayerId}, { isIntercession: true });
+        const [ownerToSendPush] = userToSendPush;
+        if (ownerToSendPush) {
+          console.log('about to send a push - interceeding', new Date())
+          sendPrayerPush(ownerToSendPush, {prayerId}, { isIntercession: true, senderName: user.googleAuthUser.name });
         }
       })
     }

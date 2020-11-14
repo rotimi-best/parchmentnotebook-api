@@ -240,25 +240,25 @@ router.put('/:userId/:prayerId', async (req, res) => {
       })
     } else {
       // Get users watching prayer remove duplicates
-      const usersWatchingPrayer = removeDuplicatesOfStringInArr([
-        ...prayer.intercessors,
-        ...(prayer.comments
-            .filter(comment => comment.author != `${user._id}`)
-            .map(comment => `${comment.author}`)
-          )
-      ]);
+      // const usersWatchingPrayer = removeDuplicatesOfStringInArr([
+      //   ...prayer.intercessors,
+      //   ...(prayer.comments
+      //       .filter(comment => comment.author != `${user._id}`)
+      //       .map(comment => `${comment.author}`)
+      //     )
+      // ]);
 
-      getUser({ _id: { $in: usersWatchingPrayer }, subscriptions: { $gt: [] } })
-      .then((userToSendPush) => {
-        if (userToSendPush.length) {
-          console.log('about to send a push - to not owner', new Date())
-          sendPrayerPush(userToSendPush[0], {prayerId}, {
-            isComment: true,
-            senderName: user.googleAuthUser.name,
-            body: newComment.comment
-          });
-        }
-      })
+      // getUser({ _id: { $in: usersWatchingPrayer }, subscriptions: { $gt: [] } })
+      // .then((userToSendPush) => {
+      //   if (userToSendPush.length) {
+      //     console.log('about to send a push - to not owner', new Date())
+      //     sendPrayerPush(userToSendPush[0], {prayerId}, {
+      //       isComment: true,
+      //       senderName: user.googleAuthUser.name,
+      //       body: newComment.comment
+      //     });
+      //   }
+      // })
     }
   }
 

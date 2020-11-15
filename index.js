@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/subscription', async (req, res) => {
-  const { subscription: stringedSubs, userId } = req.body;
+  const { subscription: stringedSubs, userId, sendPushImmediately } = req.body;
   const subscription = JSON.parse(stringedSubs);
 
   await updateUser({ userId }, {
@@ -46,10 +46,12 @@ app.post('/subscription', async (req, res) => {
   // Send 201 - resource created
   res.status(201).json({});
 
-  NotificationAPI.sendPush(subscription, {
-    title: 'Thank you.',
-    body: 'Start by adding a new prayer request',
-  });
+  if (sendPushImmediately) {
+    NotificationAPI.sendPush(subscription, {
+      title: 'Welcome to PrayerKeep',
+      body: 'Start by adding a new prayer request',
+    });
+  }
 });
 
 app.use('/user', User);

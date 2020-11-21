@@ -1,9 +1,13 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const request = require('request');
+const { ObjectId } = mongoose.Types;
 
 const router = express.Router();
 const { getUser, updateUser } = require('../db/cruds/User');
 const { getQuote, updateQuote } = require('../db/cruds/Quote');
 const { getPrayer } = require('../db/cruds/Prayer');
+const { getStory, updateStory, addStory } = require('../db/cruds/Story');
 const { date, len, reduceDay } = require('../modules');
 const removeDuplicatesOfStringInArr = require('../helpers/removeDuplicatesOfStringInArr');
 const getVerses = require('../helpers/getVerses');
@@ -19,6 +23,14 @@ const getPassages = passages => passages.map(passage => {
     verses: getVerses(passage)
   }
 })
+
+const getStories = async () => {
+  const stories = await getStory({
+    createdAt: { $gte: new Date(new Date().getTime() - (1 * 24 * 60 * 60 * 1000)) }
+  },{ sort: { createdAt: -1 } }, null, [['creator', 'googleAuthUser.name googleAuthUser.picture']]);
+
+  return stories;
+}
 
 // @route GET feed/userId
 // @route Get home feed data
@@ -131,6 +143,7 @@ router.get('/:userId', async (req, res) => {
     prayersToday: [],
     publicPrayers,
     quote,
+    stories: await getStories(),
     // prayersPrayedToday: len(prayersPrayedToday)
   });
 });
@@ -196,5 +209,67 @@ router.put('/:userId/:quoteId', async (req, res) => {
     quote: updatedQuote
   });
 });
+
+// @route GET feed/story/userId
+// @route Get home story data
+// @access Private
+router.get('/story/view/:storyId', async (req, res) => {
+  const { storyId = '' } = req.params;
+
+  if (!ObjectId.isValid(storyId)) {
+    return res.status(404).json({
+      success: false,
+      message: 'Invalid story id'
+    });
+  }
+  const [story] = await getStory({ _id: storyId })
+
+  if (!story) {
+    return res.status(404).json({
+      success: false,
+      message: 'Story not found'
+    });
+  }
+
+  console.log('story', story)
+  res.redirect(story.url)
+
+  updateStory({ _id: storyId }, {
+    $inc : {'views' : 1}
+  });
+});
+// @route GET feed/story/view
+// @route Get home story data
+// @access Private
+router.post('/story/:userId', async (req, res) => {
+  const { userId = '' } = req.params;
+  const { url = '' } = req.body;
+
+  const [user] = await getUser({ userId });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  if (!url) {
+    return res.status(404).json({
+      success: false,
+      message: 'Invalid url'
+    });
+  }
+
+  await addStory({
+    url,
+    views: 0,
+    loves: [],
+    creator: user._id
+  });
+
+  return res.json({ success: true, stories: await getStories() });
+});
+
 
 module.exports = router;

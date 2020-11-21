@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const request = require('request');
 const { ObjectId } = mongoose.Types;
 
 const router = express.Router();
@@ -231,7 +230,6 @@ router.get('/story/view/:storyId', async (req, res) => {
     });
   }
 
-  console.log('story', story)
   res.redirect(story.url)
 
   updateStory({ _id: storyId }, {

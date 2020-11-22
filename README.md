@@ -1,2 +1,2 @@
 # parchmentnotebook-api
-API for the parchmentnotebook UI
+API for the prayerkeep.com

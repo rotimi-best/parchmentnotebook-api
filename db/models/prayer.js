@@ -1,38 +1,42 @@
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
-const timestamp = require('mongoose-timestamp')
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const timestamp = require('mongoose-timestamp');
 
 const PrayerSchema = new Schema({
   description: String,
   note: String,
   answered: {
     type: Boolean,
-    default: false
+    default: false,
+  },
+  isArchived: {
+    type: Boolean,
+    default: false,
   },
   start: {
     type: Number,
-    default: Date.now()
+    default: Date.now(),
   },
   end: {
     type: Number,
-    default: Date.now()
+    default: Date.now(),
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
   },
   owner: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
   },
   lastDatePrayed: {
     type: Number,
-    default: 0
+    default: 0,
   },
   repeat: {
     type: String,
     enum: ['daily', 'weekly', 'monthly', 'yearly', 'never'],
-    default: 'daily'
+    default: 'daily',
   },
   passages: Array,
   comments: [
@@ -40,15 +44,15 @@ const PrayerSchema = new Schema({
       comment: String,
       author: {
         type: Schema.Types.ObjectId,
-        ref: 'User'
-      }
-    }
+        ref: 'User',
+      },
+    },
   ],
   intercessors: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User'
-    }
+      ref: 'User',
+    },
   ],
   public: Boolean,
 });

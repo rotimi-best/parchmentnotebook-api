@@ -4,7 +4,12 @@ const { ObjectId } = mongoose.Types;
 
 const router = express.Router();
 const { getUser } = require('../db/cruds/User');
-const { getPrayer, updatePrayer, addPrayer, deletePrayer } = require('../db/cruds/Prayer');
+const {
+  getPrayer,
+  updatePrayer,
+  addPrayer,
+  deletePrayer,
+} = require('../db/cruds/Prayer');
 const { getCollection, updateCollection } = require('../db/cruds/Collection');
 const { date } = require('../modules');
 const sendPrayerPush = require('../helpers/sendPrayerPush');
@@ -17,12 +22,13 @@ const fieldsToGetFromUserModel = [
   ['comments.author', 'googleAuthUser.name googleAuthUser.picture'],
 ];
 
-const getPassages = passages => passages.map(passage => {
-  return {
-    label: passage,
-    verses: getVerses(passage)
-  }
-})
+const getPassages = (passages) =>
+  passages.map((passage) => {
+    return {
+      label: passage,
+      verses: getVerses(passage),
+    };
+  });
 
 // @route GET /prayer/userId
 // @route Get All Prayer Request
@@ -35,13 +41,18 @@ router.get('/:userId', async (req, res) => {
   if (!user) {
     return res.status(404).json({
       success: false,
-      message: 'User not found'
+      message: 'User not found',
     });
   }
 
-  const prayers = await getPrayer({
-    owner: user._id
-  }, { sort: { createdAt: -1 } }, null, [fieldsToGetFromUserModel[0]]);
+  const prayers = await getPrayer(
+    {
+      owner: user._id,
+    },
+    { sort: { createdAt: -1 } },
+    null,
+    [fieldsToGetFromUserModel[0]]
+  );
   const prayersWithCollection = [];
 
   for (const prayer of prayers) {
@@ -52,12 +63,17 @@ router.get('/:userId', async (req, res) => {
     prayer._doc.isOwner = `${user._id}` == `${prayer.creator}`;
     prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
 
-    prayersWithCollection.push(prayer)
+    prayersWithCollection.push(prayer);
   }
 
-  const interceedingPrayers = await getPrayer({
-    intercessors: `${user._id}`
-  }, { sort: { createdAt: -1 } }, null, [fieldsToGetFromUserModel[0]]);
+  const interceedingPrayers = await getPrayer(
+    {
+      intercessors: `${user._id}`,
+    },
+    { sort: { createdAt: -1 } },
+    null,
+    [fieldsToGetFromUserModel[0]]
+  );
   const formattedInterceedingPrayer = [];
   for (const prayer of interceedingPrayers) {
     prayer._doc.collections = [];
@@ -67,13 +83,13 @@ router.get('/:userId', async (req, res) => {
     prayer._doc.isOwner = false;
     prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
 
-    formattedInterceedingPrayer.push(prayer)
+    formattedInterceedingPrayer.push(prayer);
   }
 
   res.json({
     success: true,
     prayers: prayersWithCollection,
-    interceedingPrayers: formattedInterceedingPrayer
+    interceedingPrayers: formattedInterceedingPrayer,
   });
 });
 
@@ -81,12 +97,12 @@ router.get('/:userId', async (req, res) => {
 // @route Get A Prayer Request
 // @access Private
 router.get('/:userId/:prayerId', async (req, res) => {
-  const { userId = '', prayerId = ''} = req.params;
+  const { userId = '', prayerId = '' } = req.params;
 
   if (!ObjectId.isValid(prayerId)) {
     return res.status(404).json({
       success: false,
-      message: 'Invalid prayer id'
+      message: 'Invalid prayer id',
     });
   }
 
@@ -95,22 +111,27 @@ router.get('/:userId/:prayerId', async (req, res) => {
   if (!user) {
     return res.status(404).json({
       success: false,
-      message: 'User not found'
+      message: 'User not found',
     });
   }
 
-  const [prayer] = await getPrayer({
-    _id: prayerId,
-  }, null, null, fieldsToGetFromUserModel);
+  const [prayer] = await getPrayer(
+    {
+      _id: prayerId,
+    },
+    null,
+    null,
+    fieldsToGetFromUserModel
+  );
 
   prayer._doc.collections = await getCollection({ prayers: prayer._id });
   prayer._doc.isOwner = `${user._id}` == `${prayer.creator}`;
   prayer._doc.interceeding = prayer.intercessors.includes(user._id);
-  prayer._doc.formattedPassages = getPassages(prayer._doc.passages)
+  prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
 
   res.json({
     success: true,
-    prayer
+    prayer,
   });
 });
 
@@ -135,7 +156,7 @@ router.post('/', async (req, res) => {
   if (!user) {
     return res.status(404).json({
       success: false,
-      message: 'User not found'
+      message: 'User not found',
     });
   }
 
@@ -151,32 +172,69 @@ router.post('/', async (req, res) => {
   });
 
   collections.forEach(async ({ title }) => {
-    await updateCollection({ title, owner: user._id }, {
-      $push: { prayers: prayer._id }
-    });
+    await updateCollection(
+      { title, owner: user._id },
+      {
+        $push: { prayers: prayer._id },
+      }
+    );
   });
 
   const defaultCollectionTitle = answered
     ? DEFAULT_COLLECTION.ANSWERED_PRAYERS
     : DEFAULT_COLLECTION.UNANSWERED_PRAYERS;
 
-  await updateCollection({ title: defaultCollectionTitle, owner: user._id }, {
-    $push: { prayers: prayer._id }
-  });
+  await updateCollection(
+    { title: defaultCollectionTitle, owner: user._id },
+    {
+      $push: { prayers: prayer._id },
+    }
+  );
 
   prayer._doc.collections = await getCollection({ prayers: prayer._id });
-  prayer._doc.owner = user
+  prayer._doc.owner = user;
   prayer._doc.isOwner = true;
   prayer._doc.interceeding = false;
-  prayer._doc.formattedPassages = getPassages(prayer._doc.passages)
+  prayer._doc.formattedPassages = getPassages(prayer._doc.passages);
 
   res.json({
     success: true,
-    prayer
+    prayer,
   });
 });
 
-// @route PUT prayer/prayerId
+router.put('/:userId/:prayerId/archive', async (req, res) => {
+  const { prayerId, userId } = req.params;
+  const { isArchived } = req.body;
+
+  const [user] = await getUser({ userId });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found',
+    });
+  }
+
+  if (!ObjectId.isValid(prayerId)) {
+    return res.status(404).json({
+      success: false,
+      message: 'Invalid prayer id',
+    });
+  }
+  const _prayerId = ObjectId(prayerId);
+
+  await updatePrayer(
+    { _id: _prayerId },
+    {
+      isArchived,
+    }
+  );
+
+  res.json({ success: true });
+});
+
+// @route PUT prayer/userId/prayerId
 // @route Update a prayer
 // @access Private
 router.put('/:userId/:prayerId', async (req, res) => {
@@ -188,14 +246,14 @@ router.put('/:userId/:prayerId', async (req, res) => {
   if (!user) {
     return res.status(404).json({
       success: false,
-      message: 'User not found'
+      message: 'User not found',
     });
   }
 
   if (!ObjectId.isValid(prayerId)) {
     return res.status(404).json({
       success: false,
-      message: 'Invalid prayer id'
+      message: 'Invalid prayer id',
     });
   }
 
@@ -203,41 +261,47 @@ router.put('/:userId/:prayerId', async (req, res) => {
   const fieldsToUpdate = req.body;
   const { lastDatePrayed = null, answered } = fieldsToUpdate;
   const collections = fieldsToUpdate.collections
-    ? fieldsToUpdate.collections.map(c => c.title || '')
+    ? fieldsToUpdate.collections.map((c) => c.title || '')
     : null;
   const [prayer] = await getPrayer({ _id: _prayerId }, null, null, ['owner']);
 
   if (!prayer) {
     return res.status(404).json({
       success: false,
-      message: 'Prayer not found'
+      message: 'Prayer not found',
     });
   }
   const updateParams = {
-    $set: fieldsToUpdate
+    $set: fieldsToUpdate,
   };
   const isNotOwner = `${user._id}` != `${prayer.owner._id}`;
 
   if ('comment' in req.body) {
     const newComment = {
       comment: req.body.comment,
-      author: user._id
+      author: user._id,
     };
     updateParams['$push'] = { comments: newComment };
 
     if (isNotOwner) {
       // send push to owner
-      getUser({ _id: ObjectId(prayer.owner._id), subscriptions: { $gt: [] } })
-      .then((userToSendPush) => {
+      getUser({
+        _id: ObjectId(prayer.owner._id),
+        subscriptions: { $gt: [] },
+      }).then((userToSendPush) => {
         if (userToSendPush.length) {
-          console.log('about to send a push - to owner', new Date())
-          sendPrayerPush(userToSendPush[0], {prayerId}, {
-            isComment: true,
-            senderName: user.googleAuthUser.name,
-            body: newComment.comment
-          });
+          console.log('about to send a push - to owner', new Date());
+          sendPrayerPush(
+            userToSendPush[0],
+            { prayerId },
+            {
+              isComment: true,
+              senderName: user.googleAuthUser.name,
+              body: newComment.comment,
+            }
+          );
         }
-      })
+      });
     } else {
       // Get users watching prayer remove duplicates
       // const usersWatchingPrayer = removeDuplicatesOfStringInArr([
@@ -247,7 +311,6 @@ router.put('/:userId/:prayerId', async (req, res) => {
       //       .map(comment => `${comment.author}`)
       //     )
       // ]);
-
       // getUser({ _id: { $in: usersWatchingPrayer }, subscriptions: { $gt: [] } })
       // .then((userToSendPush) => {
       //   if (userToSendPush.length) {
@@ -265,19 +328,27 @@ router.put('/:userId/:prayerId', async (req, res) => {
   if ('interceeding' in req.body) {
     updateParams['intercessors'] = req.body.interceeding
       ? [...prayer.intercessors, user._id]
-      : prayer.intercessors.filter(userId => userId != `${user._id}`);
+      : prayer.intercessors.filter((userId) => userId != `${user._id}`);
 
     if (req.body.interceeding && isNotOwner) {
-      console.log('sending notitification to the owner that someone is praying for them')
+      console.log(
+        'sending notitification to the owner that someone is praying for them'
+      );
       // send push to owner
-      getUser({ _id: ObjectId(prayer.owner._id), subscriptions: { $gt: [] } })
-      .then((userToSendPush) => {
+      getUser({
+        _id: ObjectId(prayer.owner._id),
+        subscriptions: { $gt: [] },
+      }).then((userToSendPush) => {
         const [ownerToSendPush] = userToSendPush;
         if (ownerToSendPush) {
-          console.log('about to send a push - interceeding', new Date())
-          sendPrayerPush(ownerToSendPush, {prayerId}, { isIntercession: true, senderName: user.googleAuthUser.name });
+          console.log('about to send a push - interceeding', new Date());
+          sendPrayerPush(
+            ownerToSendPush,
+            { prayerId },
+            { isIntercession: true, senderName: user.googleAuthUser.name }
+          );
         }
-      })
+      });
     }
   }
 
@@ -308,18 +379,39 @@ router.put('/:userId/:prayerId', async (req, res) => {
 
   // Update Collection
   // 1. Default
-  if (typeof answered === "boolean") {
-    const params = bol => bol
-      ? { $push: findPrayersByPrayerId }
-      : { $pull: findPrayersByPrayerId }
-    const [wasAnswered] = await getCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: prayer.owner._id, ...findPrayersByPrayerId });
+  if (typeof answered === 'boolean') {
+    const params = (bol) =>
+      bol ? { $push: findPrayersByPrayerId } : { $pull: findPrayersByPrayerId };
+    const [wasAnswered] = await getCollection({
+      title: DEFAULT_COLLECTION.ANSWERED_PRAYERS,
+      owner: prayer.owner._id,
+      ...findPrayersByPrayerId,
+    });
 
     if (wasAnswered && !answered) {
-      await updateCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: prayer.owner._id }, params(answered));
-      await updateCollection({ title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS, owner: prayer.owner._id }, params(!answered));
+      await updateCollection(
+        { title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: prayer.owner._id },
+        params(answered)
+      );
+      await updateCollection(
+        {
+          title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS,
+          owner: prayer.owner._id,
+        },
+        params(!answered)
+      );
     } else if (!wasAnswered && answered) {
-      await updateCollection({ title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: prayer.owner._id }, params(answered));
-      await updateCollection({ title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS, owner: prayer.owner._id }, params(!answered));
+      await updateCollection(
+        { title: DEFAULT_COLLECTION.ANSWERED_PRAYERS, owner: prayer.owner._id },
+        params(answered)
+      );
+      await updateCollection(
+        {
+          title: DEFAULT_COLLECTION.UNANSWERED_PRAYERS,
+          owner: prayer.owner._id,
+        },
+        params(!answered)
+      );
     }
   }
 
@@ -328,7 +420,7 @@ router.put('/:userId/:prayerId', async (req, res) => {
     const userCurrentCollections = await getCollection({
       owner: prayer.owner._id,
       edittableByUser: true,
-      ...findPrayersByPrayerId
+      ...findPrayersByPrayerId,
     });
 
     // Remove from DB what was removed on the client.
@@ -336,36 +428,45 @@ router.put('/:userId/:prayerId', async (req, res) => {
       const { _id, title } = userCurrentCollection;
 
       if (!collections.includes(title)) {
-        await updateCollection({ _id }, {
-          $pull: findPrayersByPrayerId
-        });
+        await updateCollection(
+          { _id },
+          {
+            $pull: findPrayersByPrayerId,
+          }
+        );
       } else {
         collections.splice(collections.indexOf(title), 1);
       }
     }
     // Add the new ones
     for (const colTitle of collections) {
-      await updateCollection({ title: colTitle, owner: prayer.owner._id }, {
-        $push: findPrayersByPrayerId
-      });
+      await updateCollection(
+        { title: colTitle, owner: prayer.owner._id },
+        {
+          $push: findPrayersByPrayerId,
+        }
+      );
     }
   }
 
-  const [updatedPrayer] = await getPrayer(
-    {  _id: _prayerId },
-    null,
-    null,
-    ['creator', 'owner', ...fieldsToGetFromUserModel]
-  );
+  const [updatedPrayer] = await getPrayer({ _id: _prayerId }, null, null, [
+    'creator',
+    'owner',
+    ...fieldsToGetFromUserModel,
+  ]);
 
   updatedPrayer._doc.collections = await getCollection(findPrayersByPrayerId);
   updatedPrayer._doc.isOwner = !isNotOwner;
-  updatedPrayer._doc.formattedPassages = getPassages(updatedPrayer._doc.passages)
-  updatedPrayer._doc.interceeding = updatedPrayer._doc.intercessors.includes(user._id);
+  updatedPrayer._doc.formattedPassages = getPassages(
+    updatedPrayer._doc.passages
+  );
+  updatedPrayer._doc.interceeding = updatedPrayer._doc.intercessors.includes(
+    user._id
+  );
 
   res.json({
     success: true,
-    prayer: updatedPrayer
+    prayer: updatedPrayer,
   });
 });
 
@@ -378,7 +479,7 @@ router.delete('/:prayerId', async (req, res) => {
   if (!ObjectId.isValid(prayerId)) {
     return res.status(404).json({
       success: false,
-      message: 'Invalid prayer id'
+      message: 'Invalid prayer id',
     });
   }
 
@@ -388,7 +489,7 @@ router.delete('/:prayerId', async (req, res) => {
   if (!prayer) {
     return res.status(404).json({
       success: false,
-      message: 'Prayer not found'
+      message: 'Prayer not found',
     });
   }
 
@@ -397,12 +498,12 @@ router.delete('/:prayerId', async (req, res) => {
     await deletePrayer({ _id: _prayerId });
 
     await updateCollection(findPrayersByPrayerId, {
-      $pull: findPrayersByPrayerId
+      $pull: findPrayersByPrayerId,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 

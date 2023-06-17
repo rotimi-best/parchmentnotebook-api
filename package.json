@@ -29,5 +29,8 @@
     "mongoose-timestamp": "^0.6.0",
     "nodemon": "^2.0.2",
     "web-push": "^3.4.3"
+  },
+  "engines": {
+    "node": ">14"
   }
 }

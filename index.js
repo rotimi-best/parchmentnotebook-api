@@ -12,7 +12,7 @@ const Collection = require('./routes/Collection');
 const Prayer = require('./routes/Prayer');
 const Feed = require('./routes/Feed');
 const User = require('./routes/User');
-const NotificationAPI = require('./helpers/pushNotificiation');
+//const NotificationAPI = require('./helpers/pushNotificiation');
 const { updateUser } = require('./db/cruds/User');
 
 // MONGODB CONNECTION
@@ -46,12 +46,12 @@ app.post('/subscription', async (req, res) => {
   // Send 201 - resource created
   res.status(201).json({});
 
-  if (sendPushImmediately) {
-    NotificationAPI.sendPush(subscription, {
-      title: 'Welcome to PrayerKeep',
-      body: 'Start by adding a new prayer request',
-    });
-  }
+  // if (sendPushImmediately) {
+  //   NotificationAPI.sendPush(subscription, {
+  //     title: 'Welcome to PrayerKeep',
+  //     body: 'Start by adding a new prayer request',
+  //   });
+  // }
 });
 
 app.use('/user', User);
